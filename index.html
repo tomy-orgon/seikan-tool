@@ -1,0 +1,3102 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>製缶溶接ツール</title>
+<meta name="theme-color" content="#17539E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="製缶ツール">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Roboto+Mono:wght@400;500;700&display=swap">
+<style id="pageStyle">@page{size:A4 portrait;margin:11mm}</style>
+<style id="appStyle">
+:root{
+  --ground:#EDF0F3; --surface:#ffffff; --surface2:#F5F7F9;
+  --ink:#12171C; --ink2:#4C5763; --ink3:#7B8894;
+  --line:#D3D9E0; --lineS:#B4BEC8;
+  --accent:#17539E; --accentSoft:#E4ECF8;
+  --amber:#8F5C00; --amberSoft:#FAEFD8;
+  --red:#AF3527; --redSoft:#FAE6E3;
+  --green:#1D6B4D;
+  --piece:#DDE8F6; --pieceLine:#9DBADD;
+  --scrap:#E1E5E9;
+  --shadow:0 1px 2px rgba(18,23,28,.06),0 6px 18px rgba(18,23,28,.05);
+  --r:4px;
+  --onAccent:#ffffff;
+  --f-sans:"BIZ UDPGothic","Noto Sans JP",system-ui,-apple-system,"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+  /* 数字用。0にスラッシュを入れず、カウンター（字の中の空き）が広い書体を優先。
+     画像化のときはウェブフォントが使えないので、端末に必ずある書体を先に置く */
+  --f-mono:"Segoe UI","Helvetica Neue",Verdana,Tahoma,Arial,
+    "Hiragino Sans","Yu Gothic UI","Noto Sans JP","BIZ UDPGothic",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#10141A; --surface:#181E25; --surface2:#1E252D;
+    --ink:#E7ECF1; --ink2:#A6B2BE; --ink3:#7A8894;
+    --line:#2B343D; --lineS:#3C4854;
+    --accent:#74AAF0; --accentSoft:#152438; --onAccent:#0C1520; --onAccent:#0C1520;
+    --amber:#E0A445; --amberSoft:#2F2410;
+    --red:#EE8879; --redSoft:#381C18;
+    --green:#5CC79A;
+    --piece:#1E3352; --pieceLine:#3E639A;
+    --scrap:#222A32;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.28);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#10141A; --surface:#181E25; --surface2:#1E252D;
+  --ink:#E7ECF1; --ink2:#A6B2BE; --ink3:#7A8894;
+  --line:#2B343D; --lineS:#3C4854;
+  --accent:#74AAF0; --accentSoft:#152438; --onAccent:#0C1520;
+  --amber:#E0A445; --amberSoft:#2F2410;
+  --red:#EE8879; --redSoft:#381C18;
+  --green:#5CC79A;
+  --piece:#1E3352; --pieceLine:#3E639A;
+  --scrap:#222A32;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.28);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--f-sans);
+  font-size:14px; line-height:1.75;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  font-feature-settings:"tnum" 1;            /* 数字の幅だけ揃える（0のスラッシュは入れない） */
+}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.lbl{
+  font-family:var(--f-sans); font-size:11.5px; font-weight:700;
+  letter-spacing:.02em; color:var(--ink3);
+}
+h1,h2,h3{margin:0;font-weight:700;text-wrap:balance}
+button{font-family:inherit}
+
+.wrap{max-width:1500px;margin:0 auto;padding:0 20px 64px}
+.topbar{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:18px 0 14px;border-bottom:1px solid var(--line);margin-bottom:18px;
+}
+.brand{display:flex;align-items:baseline;gap:12px;margin-right:auto}
+.brand h1{font-size:19px;letter-spacing:.01em}
+.brand .sub{font-size:12px;color:var(--ink3)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  border:1px solid var(--lineS);background:var(--surface);color:var(--ink);
+  padding:7px 13px;border-radius:var(--r);font-size:13px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:border-color .12s,background .12s;
+}
+.btn:hover{border-color:var(--accent);background:var(--surface2)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
+.btn.primary:hover{filter:brightness(1.08);background:var(--accent)}
+.btn.tiny{padding:3px 8px;font-size:12px}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--onAccent);font-weight:700}
+.btn[aria-pressed="true"]:hover{background:var(--accent);border-color:var(--accent);filter:brightness(1.08)}
+
+.cut-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.jobhead{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:18px;box-shadow:var(--shadow);
+  display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px;
+}
+.jobhead .f{display:flex;flex-direction:column;gap:4px}
+input[type=text],input[type=number],input[type=date],select{
+  font-family:inherit;font-size:13.5px;color:var(--ink);
+  background:var(--surface2);border:1px solid var(--line);border-radius:var(--r);
+  padding:6px 8px;width:100%;
+}
+select{cursor:pointer}
+select:disabled{opacity:.5;cursor:default}
+select.unset,input.unset{border-style:dashed;border-color:var(--lineS)}
+input[type=number]{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+input::placeholder{color:var(--ink3)}
+
+.grid{display:grid;grid-template-columns:minmax(380px,450px) 1fr;gap:20px;align-items:start}
+@media(max-width:1080px){.grid{grid-template-columns:1fr}}
+@media(max-width:700px){
+  .jobhead{grid-template-columns:1fr}
+  .spec-grid{grid-template-columns:1fr 1fr}
+  .spec-grid .f:first-child{grid-column:1/-1}
+  .settings{grid-template-columns:1fr 1fr}
+  .wrap{padding:0 14px 56px}
+}
+
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);margin-bottom:16px;
+}
+.card > header{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;border-bottom:1px solid var(--line);
+}
+.card > header h2{font-size:14px;flex:1;min-width:0}
+.card .body{padding:14px}
+
+.itemname{font-size:15px;font-weight:700;border:none;background:transparent;padding:2px 0;border-bottom:1px dashed var(--line)}
+.itemname:focus{outline:none;border-bottom-color:var(--accent)}
+
+fieldset{border:none;padding:0;margin:0 0 16px}
+fieldset:last-child{margin-bottom:0}
+.fs-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.fs-head .lbl{flex:1}
+
+table.entry{width:100%;border-collapse:collapse}
+table.entry th{
+  font-family:var(--f-sans);font-size:11px;letter-spacing:.01em;
+  color:var(--ink3);text-align:left;padding:0 4px 3px;font-weight:700;
+}
+table.entry th.n{text-align:right}
+table.entry td{padding:2px 3px}
+table.entry td input{padding:4px 7px}
+.rowdel{
+  border:none;background:transparent;color:var(--ink3);cursor:pointer;
+  font-size:15px;line-height:1;padding:2px 5px;border-radius:3px;
+}
+.rowdel:hover{color:var(--red);background:var(--redSoft)}
+.hint{font-size:12px;color:var(--ink3);margin-top:6px;line-height:1.6}
+
+.spec-grid{display:grid;grid-template-columns:1.4fr 1.05fr .85fr;gap:8px;margin-bottom:10px}
+.spec-grid select{padding:6px 4px}
+.spec-grid .f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.settings .f{display:flex;flex-direction:column;gap:3px}
+
+.res-item{margin-bottom:26px}
+.res-item > h2{
+  font-size:16px;padding-bottom:7px;border-bottom:2px solid var(--ink);
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+}
+.res-item > h2 .spec{font-size:12px;color:var(--ink2);font-weight:400;margin-left:auto}
+
+.stats{display:flex;flex-wrap:wrap;gap:0;margin:12px 0 4px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.stat{flex:1 1 125px;padding:9px 12px;border-right:1px solid var(--line)}
+.stat:last-child{border-right:none}
+.stat .v{font-family:var(--f-mono);font-size:19px;font-weight:500;line-height:1.25;font-variant-numeric:tabular-nums}
+.stat .v .u{font-size:11px;color:var(--ink2);margin-left:2px;font-weight:400}
+.stat.good .v{color:var(--green)}
+.stat.warn .v{color:var(--amber)}
+
+.alert{
+  display:flex;gap:9px;align-items:flex-start;
+  background:var(--redSoft);border:1px solid var(--red);border-radius:var(--r);
+  padding:9px 12px;margin:12px 0;font-size:13px;color:var(--ink);
+}
+.alert .lbl{color:var(--red);flex:0 0 auto}
+
+.bars{margin-top:16px;display:flex;flex-direction:column;gap:9px}
+.barrow{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}
+.barmeta{font-size:12px;line-height:1.5}
+.barmeta .src{font-family:var(--f-mono);font-weight:500;font-size:13px}
+.barmeta .kind{color:var(--ink3)}
+.barmeta .kind.rem{color:var(--amber)}
+.barmeta .rep{color:var(--ink2)}
+.bar{
+  display:flex;height:34px;border:1px solid var(--lineS);border-radius:2px;overflow:hidden;
+  background:var(--surface);
+}
+.seg{
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  font-family:var(--f-mono);font-size:12px;font-variant-numeric:tabular-nums;
+  border-right:1px solid var(--lineS);white-space:nowrap;min-width:0;
+}
+.seg:last-child{border-right:none}
+.seg.piece{background:var(--piece);color:var(--ink);border-right:1px solid var(--pieceLine)}
+.seg.rem{background:var(--amberSoft);color:var(--amber)}
+.seg.trim{
+  color:var(--ink3);
+  background:repeating-linear-gradient(135deg,var(--scrap) 0 5px,transparent 5px 10px);
+}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--ink2)}
+.legend i{display:inline-block;width:12px;height:12px;border:1px solid var(--lineS);vertical-align:-2px;margin-right:5px;border-radius:2px}
+.legend .p{background:var(--piece);border-color:var(--pieceLine)}
+.legend .r{background:var(--amberSoft);border-color:var(--amber)}
+.legend .d{background:repeating-linear-gradient(135deg,var(--scrap) 0 5px,transparent 5px 10px)}
+
+.tbl-wrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:var(--r)}
+table.out{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--surface)}
+table.out th{
+  font-family:var(--f-sans);font-size:11.5px;letter-spacing:.01em;
+  color:var(--ink3);font-weight:700;text-align:left;padding:8px 10px;
+  border-bottom:1px solid var(--lineS);white-space:nowrap;background:var(--surface2);
+}
+table.out td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.out tr:last-child td{border-bottom:none}
+table.out td.n,table.out th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.out td.idx{color:var(--ink3);font-family:var(--f-mono);width:1%}
+.cutlist{display:flex;flex-wrap:wrap;gap:4px 8px}
+.chip{
+  font-family:var(--f-mono);font-size:12.5px;
+  background:var(--accentSoft);color:var(--accent);border-radius:3px;padding:1px 7px;white-space:nowrap;
+}
+.sub{font-size:12px;color:var(--ink3)}
+.empty{padding:34px 16px;text-align:center;color:var(--ink3);font-size:13px;line-height:1.9}
+.sect-title{margin:18px 0 0;font-size:12.5px;font-weight:700;color:var(--ink2)}
+
+/* ---------- 画像書き出し用（オフスクリーンで組む） ---------- */
+.shot #printSheet{display:block !important}
+.shot .w-list{max-height:none !important;overflow:visible !important}
+.shot.dense .sh-item{margin-bottom:5pt}
+.shot.dense .sh-ih{margin-bottom:2pt;padding-bottom:1pt}
+.shot.dense .sh-cut td{padding:1pt 3pt;font-size:8.4pt}
+.shot.dense .sh-bar{height:12pt}
+.shot.dense .sh-seg{font-size:7.6pt}
+.shot.dense .sh-seg em{font-size:6.6pt}
+.shot.dense .sh-foot{font-size:7.2pt;margin-top:1.5pt}
+.shot.dense .sh-head{margin-bottom:4pt}
+.shot.dense .w-row{padding:6px 12px}
+.shot.dense .w-cell{font-size:17px}
+.shot.dense .w-mhead{padding:8px 14px 5px}
+.shot.dense .w-stat{padding:6px 10px}
+.shot .w-more summary{display:none !important}
+.shot .w-mark,.shot .card{box-shadow:none !important}
+.imgwrap{border:1px solid var(--line);border-radius:var(--r);background:#fff;padding:6px;
+  max-height:52vh;overflow:auto}
+.imgwrap img{display:block;width:100%;height:auto}
+
+/* ---------- モーダル ---------- */
+.modal{position:fixed;inset:0;background:rgba(8,12,16,.55);display:flex;align-items:center;
+  justify-content:center;padding:18px;z-index:120}
+.modal-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  max-width:660px;width:100%;max-height:88vh;display:flex;flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.modal-head h3{font-size:15px;flex:1;min-width:0}
+.modal-body{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:10px;font-size:13px}
+.modal-body p{margin:0;color:var(--ink2);line-height:1.7}
+.modal-body textarea{width:100%;min-height:180px;font-family:var(--f-mono);font-size:12px;
+  border:1px solid var(--line);border-radius:var(--r);background:var(--surface2);
+  color:var(--ink);padding:9px;resize:vertical}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+  background:var(--ink);color:var(--ground);padding:10px 16px;border-radius:var(--r);
+  font-size:13px;max-width:min(560px,90vw);box-shadow:0 8px 28px rgba(0,0,0,.28);z-index:99;
+}
+
+/* ---------- 印刷シート（A4に自動縮小して収める。色はテーマ非依存の固定値） ---------- */
+#printSheet{display:none;background:#fff;color:#111;line-height:1.5;
+  font-family:var(--f-sans);-webkit-font-smoothing:antialiased}
+#printSheet *{box-sizing:border-box}
+.sh-head{display:flex;align-items:baseline;gap:12pt;border-bottom:1.6pt solid #111;padding-bottom:3pt;margin-bottom:6pt}
+.sh-title{font-size:12.5pt;font-weight:700;letter-spacing:.14em}
+.sh-meta{margin-left:auto;display:flex;gap:14pt;font-size:8.5pt;color:#444}
+.sh-meta b{color:#111;font-size:10.5pt;font-weight:700;margin-left:3pt;font-family:var(--f-mono)}
+.sh-item{margin-bottom:8pt}
+.sh-ih{display:flex;align-items:baseline;gap:6pt;border-bottom:1pt solid #111;padding-bottom:1.5pt;margin-bottom:3pt;flex-wrap:wrap}
+.sh-ih .no{font-family:var(--f-mono);font-size:8pt;color:#777}
+.sh-ih .nm{font-size:10.5pt;font-weight:700;white-space:nowrap;flex:0 0 auto}
+.sh-ih .st{margin-left:auto;font-size:8pt;color:#333;white-space:nowrap}
+.sh-ih .st b{font-size:9pt}
+.sh-warn{font-size:8.5pt;color:#A32B1D;border:.8pt solid #A32B1D;background:#FBEBE8;padding:2pt 5pt;margin-bottom:3pt}
+table.sh-cut{width:100%;border-collapse:collapse}
+.sh-cut td{border-bottom:.4pt solid #BBB;padding:1.6pt 3pt;vertical-align:middle;
+  font-family:var(--f-mono);font-size:8.8pt;font-weight:500;font-variant-numeric:tabular-nums;
+  letter-spacing:.01em}
+.sh-cut tr:last-child td{border-bottom:none}
+.sh-cut .no{width:12pt;text-align:right;color:#888}
+.sh-cut .src{width:72pt;white-space:nowrap;font-weight:500}
+.sh-cut .src span{font-family:var(--f-sans);font-size:7.4pt;color:#666;margin-left:2pt;font-weight:400}
+.sh-cut .qty{width:36pt;text-align:right;white-space:nowrap;font-weight:700}
+.sh-bar{display:flex;height:15pt;border:.6pt solid #444;background:#fff;overflow:hidden}
+.sh-seg{display:flex;align-items:center;justify-content:center;gap:2pt;overflow:hidden;
+  white-space:nowrap;min-width:0;border-right:.6pt solid #444;padding:0 1.5pt;
+  font-family:var(--f-mono);font-size:8.2pt;font-weight:500;font-variant-numeric:tabular-nums;
+  letter-spacing:.01em}
+.sh-seg:last-child{border-right:none}
+.sh-seg.p{background:#DCE7F5;color:#0F1B29}
+.sh-seg.r{background:#F8EAD0;color:#7A4E00}
+.sh-seg.t{background:repeating-linear-gradient(135deg,#DDD 0 3px,#fff 3px 6px);color:#666}
+.sh-seg em{font-style:normal;font-family:var(--f-sans);font-size:7.1pt;font-weight:400;opacity:.8}
+.sh-foot{font-size:8.2pt;color:#333;margin-top:2.5pt;display:flex;gap:12pt;flex-wrap:wrap}
+.sh-foot b{color:#111;font-weight:700}
+.sh-foot .ng{color:#A32B1D}
+.sh-legend{font-size:7.4pt;color:#666;margin-top:4pt;display:flex;gap:10pt}
+.sh-legend i{display:inline-block;width:8pt;height:8pt;border:.5pt solid #666;vertical-align:-1pt;margin-right:2pt}
+.sh-legend .p{background:#DCE7F5}
+.sh-legend .r{background:#F8EAD0}
+.sh-legend .t{background:repeating-linear-gradient(135deg,#DDD 0 3px,#fff 3px 6px)}
+
+/* ---------- タブ ---------- */
+.app-lead{margin:0 0 18px;font-size:13.5px;line-height:1.85;color:var(--ink2);
+  background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:var(--r);padding:12px 15px;max-width:84ch;box-shadow:var(--shadow)}
+.app-lead .sig{font-weight:700;color:var(--ink);white-space:nowrap}
+
+.tabs{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.tab{
+  display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;
+  border:2px solid var(--lineS);border-radius:8px;background:var(--surface);color:var(--ink2);
+  padding:11px 20px;min-width:200px;cursor:pointer;
+  transition:border-color .12s,background .12s,color .12s;
+}
+.tab .t-main{font-size:15.5px;font-weight:700;letter-spacing:.01em}
+.tab .t-sub{font-size:11.5px;font-weight:400;opacity:.85}
+.tab:hover{border-color:var(--accent);background:var(--surface2);color:var(--ink)}
+.tab[aria-selected="true"]{
+  background:var(--accent);border-color:var(--accent);color:var(--onAccent);
+  box-shadow:0 3px 10px rgba(23,83,158,.28);
+}
+.tab[aria-selected="true"] .t-sub{opacity:.85}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:560px){.tab{flex:1 1 100%;min-width:0}}
+@media(prefers-reduced-motion:reduce){.tab{transition:none}}
+.screen[hidden]{display:none}
+.seg{display:inline-flex;border:1px solid var(--lineS);border-radius:var(--r);overflow:hidden;
+  background:var(--surface);margin-bottom:16px}
+.segbtn{border:none;background:transparent;color:var(--ink2);font-size:14px;font-weight:700;
+  padding:10px 22px;cursor:pointer;white-space:nowrap}
+.segbtn+.segbtn{border-left:1px solid var(--lineS)}
+.segbtn:hover{color:var(--ink);background:var(--surface2)}
+.segbtn[aria-selected="true"]{background:var(--accent);color:var(--onAccent)}
+.segbtn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+/* ---------- 溶接ピッチ画面 ---------- */
+body.tab-weld .wrap,body.tab-circle .wrap,body.tab-tri .wrap,body.tab-wt .wrap{max-width:940px}
+.wcalc{display:flex;flex-direction:column;gap:14px}
+.w-lead{font-size:13px;color:var(--ink2);margin:0 0 2px;max-width:52ch}
+.w-input{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.w-field{display:flex;flex-direction:column;gap:5px}
+.w-field label{font-size:14px;font-weight:700}
+.w-subs{display:flex;font-size:11.5px;font-weight:700;color:var(--ink2);padding:0 1px}
+.w-subs span:first-child,.w-subs span:last-child{flex:1;text-align:center}
+.w-subs .w-sp{width:22px;flex:none}
+.w-wrap{display:flex;align-items:stretch;border:1.5px solid var(--lineS);border-radius:var(--r);
+  overflow:hidden;background:var(--surface2)}
+.w-wrap:focus-within{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.w-wrap input[type=number]{flex:1;min-width:0;width:auto;border:none;background:transparent;color:var(--ink);
+  font-family:var(--f-mono);font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;
+  padding:10px 11px;outline:none;text-align:left;border-radius:0}
+.w-wrap input:focus{outline:none}
+.w-wrap input[type=text]{flex:1;min-width:0;width:auto;border:none;background:transparent;color:var(--ink);
+  font-family:var(--f-mono);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;
+  padding:10px 11px;outline:none;text-align:left;border-radius:0}
+.w-wrap.combo input[type=number]{text-align:center;padding:10px 4px}
+.w-wrap .w-dash{width:22px;flex:none;display:flex;align-items:center;justify-content:center;
+  color:var(--ink3);font-family:var(--f-mono);font-size:18px;font-weight:700}
+.w-wrap .w-unit{display:flex;align-items:center;padding:0 11px;font-size:13px;font-weight:700;
+  color:var(--ink2);background:var(--surface);border-left:1.5px solid var(--lineS)}
+.w-ex{font-size:12px;color:var(--ink3)}
+.w-note{font-size:12px;color:var(--ink3);text-align:center;margin:0}
+
+.w-msg{border-radius:var(--r);padding:13px 15px;font-size:13.5px;display:flex;gap:9px;align-items:flex-start}
+.w-msg.prompt{color:var(--ink2);background:var(--surface);border:1px dashed var(--lineS)}
+.w-msg.error{color:var(--red);background:var(--redSoft);border:1px solid var(--red)}
+.w-msg .g{font-family:var(--f-mono);font-weight:700}
+
+.w-stats{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.w-stat{background:var(--surface);padding:9px 12px;display:flex;flex-direction:column;gap:1px}
+.w-stat.hero{background:var(--accentSoft)}
+.w-lab{font-size:11.5px;font-weight:700;color:var(--ink2)}
+.w-val{font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums;font-size:19px;
+  display:flex;align-items:baseline;gap:3px;line-height:1.3}
+.w-stat.hero .w-val{color:var(--accent);font-size:23px}
+.w-val .u{font-size:11px;font-weight:400;color:var(--ink3)}
+.w-sub{font-size:11px;color:var(--ink3);font-family:var(--f-mono)}
+@media(max-width:440px){.w-stats{grid-template-columns:1fr}.w-stat.hero{order:-1}}
+
+.w-mark{padding:0;border:1px solid var(--line);border-top:3px solid var(--accent);
+  border-radius:var(--r);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.w-mark.b{border-top-color:var(--amber)}
+.w-mark.b .w-idx{background:var(--amber)}
+.w-mhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:13px 16px 9px}
+.w-mtitle{font-size:14.5px;font-weight:700}
+.w-mcount{font-family:var(--f-mono);font-size:12px;color:var(--ink3)}
+.w-cols{display:grid;grid-template-columns:4.2em 1fr 1fr;gap:10px;padding:0 16px 7px;
+  font-size:12px;font-weight:700;color:var(--ink2)}
+.w-cols span:not(:first-child){text-align:right;border-left:1px solid var(--line);padding-left:10px}
+.w-list{max-height:clamp(320px,58vh,760px);overflow-y:auto;border-top:1px solid var(--line)}
+.w-list.compact{max-height:clamp(220px,32vh,440px)}
+.w-row{display:grid;grid-template-columns:4.2em 1fr 1fr;align-items:center;gap:10px;
+  padding:13px 16px;border-bottom:1px solid var(--line)}
+.w-row:last-child{border-bottom:none}
+.w-idx{font-family:var(--f-mono);font-weight:700;font-size:11px;color:var(--onAccent);
+  background:var(--accent);border-radius:4px;text-align:center;padding:3px 4px;white-space:nowrap}
+.w-cell{display:flex;align-items:center;justify-content:flex-end;gap:3px;padding-left:10px;
+  border-left:1px solid var(--line);align-self:stretch;
+  font-family:var(--f-mono);font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.w-cell .u{font-size:12px;font-weight:400;color:var(--ink3)}
+@media(min-width:520px){
+  .w-list{display:grid;grid-template-columns:1fr 1fr}
+  .w-row{border-right:1px solid var(--line)}
+  .w-row:nth-child(2n){border-right:none}
+}
+
+.w-ruler{padding:15px 16px 11px}
+.w-bar{width:100%;height:56px;display:block}
+.w-dim{position:relative;height:42px;margin-top:2px}
+.w-dim .ext{position:absolute;top:0;height:19px;width:1.5px;background:var(--lineS)}
+.w-dim .ext.l{left:0}.w-dim .ext.r{right:0}
+.w-dim .ar{position:absolute;top:18px;left:0;right:0;height:1.5px;background:var(--lineS)}
+.w-dim .ar::before,.w-dim .ar::after{content:'';position:absolute;top:50%;width:0;height:0;
+  transform:translateY(-50%);border-top:5px solid transparent;border-bottom:5px solid transparent}
+.w-dim .ar::before{left:0;border-right:8px solid var(--lineS)}
+.w-dim .ar::after{right:0;border-left:8px solid var(--lineS)}
+.w-dim .dl{position:absolute;top:25px;left:50%;transform:translateX(-50%);
+  font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.w-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:11px;font-size:12px;color:var(--ink2)}
+.w-sw{width:12px;height:12px;border-radius:2px;display:inline-block;vertical-align:-2px;margin-right:5px}
+.w-sw.a{background:var(--accent)}
+.w-sw.bb{background:var(--amber)}
+.w-sw.base{background:var(--surface2);border:1px solid var(--lineS)}
+.w-steps{font-family:var(--f-mono);font-size:12.5px;color:var(--ink2);background:var(--surface2);
+  border-radius:var(--r);padding:11px 14px;line-height:1.95;overflow-x:auto}
+.w-steps .eq{color:var(--ink3)}
+.w-steps .res{color:var(--accent);font-weight:700}
+.w-more summary{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;
+  font-weight:700;color:var(--ink2);padding:8px 2px;list-style:none}
+.w-more summary::-webkit-details-marker{display:none}
+.w-more .chev{color:var(--ink3);transition:transform .15s ease}
+.w-more[open] .chev{transform:rotate(90deg)}
+.w-mbody{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+
+/* ---------- 三角計算 ---------- */
+.t-cols{display:grid;grid-template-columns:20px 1fr 20px 1fr;gap:8px;margin-bottom:2px}
+.t-cols span{font-size:11.5px;font-weight:700;color:var(--ink2)}
+.t-cols span:first-child{grid-column:1/3}
+.t-cols span:last-child{grid-column:3/5}
+.t-row{display:grid;grid-template-columns:20px 1fr 20px 1fr;gap:8px;align-items:center;margin-bottom:6px}
+.t-lab{font-family:var(--f-mono);font-size:15px;font-weight:700;color:var(--ink2);text-align:center}
+.t-fig{border:1px solid var(--line);border-radius:var(--r);background:var(--surface2);padding:6px 4px;margin-bottom:12px}
+.t-svg{width:100%;max-width:430px;height:auto;display:block;margin:0 auto}
+.t-svg text{paint-order:stroke;stroke:var(--surface);stroke-width:3.5px;stroke-linejoin:round}
+.t-svg .side{font-family:var(--f-mono);font-size:12px;font-weight:700;fill:var(--accent)}
+.t-svg .ang{font-family:var(--f-mono);font-size:11px;font-weight:700;fill:var(--amber)}
+.t-svg .vtx{font-family:var(--f-mono);font-size:13px;font-weight:700;fill:var(--ink)}
+.t-in{font-family:var(--f-sans);font-size:10.5px;font-weight:700;border-radius:3px;padding:1px 5px;margin-left:6px}
+.t-in.given{background:var(--accentSoft);color:var(--accent)}
+.t-in.calc{background:var(--amberSoft);color:var(--amber)}
+.w-wrap input.calc{color:var(--amber)}
+.w-wrap:has(input.calc){border-color:var(--amber);background:var(--amberSoft)}
+.w-stats.four{grid-template-columns:1.3fr 1fr 1fr 1fr}
+@media(max-width:560px){.w-stats.four{grid-template-columns:1fr 1fr}}
+
+/* ---------- 円周割付 ---------- */
+.c-dim{margin-bottom:8px;align-self:flex-start}
+.c-toprow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.c-toprow .seg{margin-bottom:0}
+.c-toprow #btnDec{margin-left:auto}
+.c-pad{border:1px solid var(--line);border-radius:var(--r);background:var(--surface2);padding:6px 6px 2px}
+.c-pad svg{width:100%;max-width:430px;height:auto;display:block;margin:0 auto;touch-action:manipulation}
+.c-pad svg *{pointer-events:none}
+.c-pad .hit{pointer-events:stroke;cursor:crosshair}
+.c-pad .hole circle{pointer-events:all;cursor:pointer}
+.c-pad .lab{font-family:var(--f-mono);font-size:12px;font-weight:700;fill:var(--ink2)}
+.c-pad .lab.dim{fill:var(--ink3);font-weight:400}
+.c-pad .len{font-family:var(--f-mono);font-size:11px;font-weight:700;fill:var(--accent)}
+.c-pad .ghost{font-family:var(--f-sans);font-size:13px;fill:var(--ink3)}
+.c-padbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.c-padbar .hint{margin-top:0;flex:1;min-width:150px}
+.c-pad .no,.c-svg .no{font-family:var(--f-mono);font-size:11px;font-weight:700;fill:var(--onAccent)}
+.c-row{display:grid;grid-template-columns:26px minmax(84px,112px) 1fr 24px;align-items:center;gap:7px;padding:3px 0}
+.c-no{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--onAccent);
+  font-family:var(--f-mono);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.c-no.off{background:var(--lineS);color:var(--surface)}
+.w-wrap.sm input[type=number]{font-size:17px;padding:6px 9px;text-align:right}
+.w-wrap.sm .w-unit{padding:0 9px;font-size:12px}
+.c-gap{font-family:var(--f-mono);font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-row.out .c-no{background:var(--amber)}
+.c-row.out .c-gap{color:var(--amber)}
+.c-row.out .w-wrap{border-color:var(--amber)}
+.c-row.dup .c-no{background:var(--red)}
+.c-row.dup .c-gap{color:var(--red)}
+.c-row.dup .w-wrap{border-color:var(--red)}
+.c-svg{width:100%;max-width:390px;height:auto;display:block;margin:0 auto}
+.c-svg .lab{font-family:var(--f-mono);font-size:11px;font-weight:700;fill:var(--ink2)}
+.c-svg .len{font-family:var(--f-mono);font-size:10.5px;font-weight:700;fill:var(--accent)}
+table.out td.hl{color:var(--accent);font-weight:700}
+table.out td.nw{white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.w-more .chev{transition:none}}
+
+/* ---------- 重量計算 ---------- */
+.g-item{padding:12px 14px 12px;margin-bottom:10px}
+.g-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.g-no{flex:none;min-width:26px;height:26px;border-radius:4px;background:var(--accent);color:var(--onAccent);
+  font-family:var(--f-mono);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.g-no.off{background:var(--lineS);color:var(--surface)}
+.g-head input[type=text]{flex:1;min-width:0}
+.g-spec{display:grid;grid-template-columns:1.35fr 1.15fr 1fr;gap:8px;margin-bottom:10px}
+.g-f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.g-dims{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:8px}
+.g-dims .w-wrap.sm input[type=number]{font-size:16px;padding:6px 8px}
+.g-f.g-len .w-wrap{border-color:var(--accent)}
+.g-res{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:flex-end;
+  margin-top:10px;padding-top:9px;border-top:1px dashed var(--line);font-size:12px;color:var(--ink3)}
+.g-res b{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:15px;color:var(--ink);margin:0 2px}
+.g-res .g-tot b{font-size:19px;color:var(--accent)}
+.g-res .g-err{color:var(--red);margin-right:auto}
+.g-res .g-wait{margin-right:auto}
+table.out tfoot td{border-top:2px solid var(--lineS);border-bottom:none;font-weight:700;background:var(--surface2)}
+@media(max-width:560px){.g-spec{grid-template-columns:1fr 1fr}.g-spec .g-f:first-child{grid-column:1/-1}}
+
+@media print{
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .topbar,.tabs,.app-lead,#toast{display:none !important}
+  /* 材料切断：専用シートのみ印刷 */
+  body.tab-cut .wrap{display:none !important}
+  body.tab-cut #printSheet{display:block;zoom:var(--sheetScale,1)}
+  /* 溶接：画面の内容をそのまま印刷 */
+  body:not(.tab-cut) #printSheet{display:none !important}
+  body:not(.tab-cut) .wrap{max-width:none;padding:0}
+  body:not(.tab-cut) .card,body:not(.tab-cut) .w-mark{box-shadow:none}
+  body:not(.tab-cut) .w-list{max-height:none !important;overflow:visible !important}
+  body:not(.tab-cut) .w-row,body:not(.tab-cut) .w-stats,body:not(.tab-cut) .w-ruler{break-inside:avoid}
+}
+/* ---------- 要望ボックス ---------- */
+.lead-fb{border:none;background:none;padding:0;margin-left:4px;font:inherit;font-weight:700;
+  color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.lead-fb:hover{filter:brightness(1.15)}
+.lead-fb:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.fb-form{display:flex;flex-direction:column;gap:12px}
+.fb-f{display:flex;flex-direction:column;gap:4px}
+.fb-f > label,.fb-f > .lbl{font-size:12.5px;font-weight:700;color:var(--ink2)}
+.fb-f .opt{font-weight:400;color:var(--ink3);margin-left:4px}
+.fb-kinds{display:flex;flex-wrap:wrap;gap:6px}
+.fb-kinds .btn{padding:8px 14px}
+.modal-body textarea.fb-body{font-family:var(--f-sans);font-size:14px;line-height:1.7;min-height:150px}
+.fb-err{color:var(--red);font-size:12.5px;font-weight:700}
+.fb-note{font-size:12px;color:var(--ink3);line-height:1.7}
+.fb-off{background:var(--amberSoft);border:1px solid var(--amber);color:var(--ink);
+  border-radius:var(--r);padding:8px 11px;font-size:12.5px;line-height:1.7}
+.fb-to{font-family:var(--f-mono);color:var(--ink2)}
+.net-badge{font-size:11.5px;font-weight:700;color:var(--amber);background:var(--amberSoft);
+  border:1px solid var(--amber);border-radius:999px;padding:2px 10px;white-space:nowrap}
+@media print{.net-badge{display:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <h1>製缶溶接ツール</h1>
+      <span class="sub">現場計算ツール / 単位 mm</span>
+    </div>
+    <div class="actions">
+      <span class="net-badge" id="netBadge" hidden>オフライン中（計算はそのまま使えます）</span>
+      <button class="btn" id="btnFeedback">要望・不具合を送る</button>
+      <button class="btn" id="btnPrintFile" hidden>印刷用ファイルを保存</button>
+      <button class="btn" id="btnTheme">画面を暗く</button>
+      <button class="btn" id="btnImage">画像で出す</button>
+      <button class="btn primary" id="btnPrint">印刷</button>
+    </div>
+  </div>
+
+  <p class="app-lead">製缶で必要なツールを集めたWEBアプリだよ。これから必要な機能を追加していくので、不具合や追加要望があれば気軽に連絡してね<button type="button" class="lead-fb" id="leadFeedback">→ 要望・不具合を送る</button>。<span class="sig">@富山</span></p>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="weld" aria-selected="true">
+      <span class="t-main">溶接ピッチ</span>
+      <span class="t-sub">通常・千鳥のマーキング位置を出す</span>
+    </button>
+    <button class="tab" role="tab" data-tab="circle" aria-selected="false">
+      <span class="t-main">円周割付</span>
+      <span class="t-sub">穴の角度から直線距離（弦）を出す</span>
+    </button>
+    <button class="tab" role="tab" data-tab="tri" aria-selected="false">
+      <span class="t-main">三角計算</span>
+      <span class="t-sub">辺と角から残りを出す・面積・高さ</span>
+    </button>
+    <button class="tab" role="tab" data-tab="cut" aria-selected="false">
+      <span class="t-main">材料切断</span>
+      <span class="t-sub">定尺から何本取れるか・切断指示書</span>
+    </button>
+    <button class="tab" role="tab" data-tab="wt" aria-selected="false">
+      <span class="t-main">重量計算</span>
+      <span class="t-sub">鋼材の寸法から概算の重さを出す</span>
+    </button>
+  </nav>
+
+  <section class="screen" id="scr-weld">
+    <div class="seg" role="tablist" aria-label="溶接ピッチの種類">
+      <button class="segbtn" role="tab" data-weld="normal" aria-selected="true">通常ピッチ</button>
+      <button class="segbtn" role="tab" data-weld="stagger" aria-selected="false">千鳥（A面・B面）</button>
+    </div>
+    <div class="wcalc" id="w-normal">
+      <p class="w-lead">母材長さ・溶接長・基準ピッチを入れると、実際のピッチと各溶接の位置を計算します。</p>
+      <div class="card w-input">
+        <div class="w-field">
+          <label for="p-len">母材長さ</label>
+          <div class="w-wrap"><input id="p-len" type="number" inputmode="decimal" placeholder="3000" min="0" step="any"><span class="w-unit">mm</span></div>
+        </div>
+        <div class="w-field">
+          <label for="p-weld">溶接ピッチ</label>
+          <div class="w-subs"><span>溶接長</span><span class="w-sp"></span><span>基準ピッチ</span></div>
+          <div class="w-wrap combo">
+            <input id="p-weld" type="number" inputmode="decimal" placeholder="30" min="0" step="any">
+            <span class="w-dash">-</span>
+            <input id="p-pitch" type="number" inputmode="decimal" placeholder="150" min="0" step="any">
+            <span class="w-unit">mm</span>
+          </div>
+          <div class="w-ex">図面表記「30-150」のまま、それぞれの数字を入力</div>
+        </div>
+      </div>
+      <div id="p-out" aria-live="polite"></div>
+      <p class="w-note">結果は1mm未満を四捨五入して表示しています</p>
+    </div>
+    <div class="wcalc" id="w-stagger" hidden>
+      <p class="w-lead">A面・B面の溶接位置を、半ピッチずらして計算します。</p>
+      <div class="card w-input">
+        <div class="w-field">
+          <label for="s-len">母材長さ</label>
+          <div class="w-wrap"><input id="s-len" type="number" inputmode="decimal" placeholder="3000" min="0" step="any"><span class="w-unit">mm</span></div>
+        </div>
+        <div class="w-field">
+          <label for="s-weld">溶接ピッチ</label>
+          <div class="w-subs"><span>溶接長</span><span class="w-sp"></span><span>基準ピッチ</span></div>
+          <div class="w-wrap combo">
+            <input id="s-weld" type="number" inputmode="decimal" placeholder="30" min="0" step="any">
+            <span class="w-dash">-</span>
+            <input id="s-pitch" type="number" inputmode="decimal" placeholder="150" min="0" step="any">
+            <span class="w-unit">mm</span>
+          </div>
+          <div class="w-ex">図面表記「30-150」のまま、それぞれの数字を入力（A面・B面共通）</div>
+        </div>
+      </div>
+      <div id="s-out" aria-live="polite"></div>
+      <p class="w-note">結果は1mm未満を四捨五入して表示しています</p>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-circle" hidden>
+    <div class="wcalc">
+      <p class="w-lead">図面に角度しか書いていない穴の、実際に測れる直線距離（弦）を計算します。円弧に沿った長さも一緒に出します。</p>
+      <div class="card w-input">
+        <div class="w-field">
+          <label for="c-size">円の寸法</label>
+          <div class="c-toprow">
+            <div class="seg c-dim" role="tablist" aria-label="直径か半径かを選ぶ">
+              <button class="segbtn" role="tab" data-cdim="dia" aria-selected="true">直径 φ</button>
+              <button class="segbtn" role="tab" data-cdim="rad" aria-selected="false">半径 R</button>
+            </div>
+            <button class="btn" id="btnDec" aria-pressed="false">小数点以下を表示</button>
+          </div>
+          <div class="w-wrap"><input id="c-size" type="number" inputmode="decimal" placeholder="1782" min="0" step="any"><span class="w-unit">mm</span></div>
+          <div class="w-ex" id="c-conv"></div>
+        </div>
+        <div class="w-field">
+          <label>穴の位置</label>
+          <div class="seg c-dim" role="tablist" aria-label="半円か全円かを選ぶ">
+            <button class="segbtn" role="tab" data-cshape="half" aria-selected="true">半円</button>
+            <button class="segbtn" role="tab" data-cshape="full" aria-selected="false">全円</button>
+          </div>
+          <div class="c-pad" id="c-pad"></div>
+          <div class="c-padbar">
+            <p class="hint">円の線をタップすると穴を追加、穴をタップすると削除。1°単位です。</p>
+            <button class="btn tiny" id="c-undo">ひとつ戻す</button>
+            <button class="btn tiny" id="c-clear">全部消す</button>
+          </div>
+        </div>
+        <div class="w-field">
+          <label id="c-rowlab">穴の間隔（穴①②③…）</label>
+          <div class="seg c-dim" role="tablist" aria-label="角度の入れ方を選ぶ">
+            <button class="segbtn" role="tab" data-cmode="gap" aria-selected="true">間隔で入れる</button>
+            <button class="segbtn" role="tab" data-cmode="abs" aria-selected="false">角度で入れる</button>
+          </div>
+          <p class="w-ex" id="c-modenote" style="margin:-8px 0 8px"></p>
+          <div class="seg c-dim" id="c-dirseg" role="tablist" aria-label="穴を足していく向きを選ぶ">
+            <button class="segbtn" role="tab" data-cdir="cw" aria-selected="true">時計回り ↻</button>
+            <button class="segbtn" role="tab" data-cdir="ccw" aria-selected="false">反時計回り ↺</button>
+          </div>
+          <div id="c-rows"></div>
+          <div class="c-padbar">
+            <button class="btn tiny" id="c-add">＋ 穴を追加</button>
+            <button class="btn tiny" id="c-sort">角度順に並べる</button>
+            <p class="hint" id="c-hint"></p>
+          </div>
+        </div>
+      </div>
+      <div id="c-out" aria-live="polite"></div>
+      <p class="w-note">結果は1mm未満を四捨五入して表示しています</p>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-tri" hidden>
+    <div class="wcalc">
+      <p class="w-lead">分かっている辺と角を入れると、残りの辺・角と面積・高さを計算します。大文字（A・B・C）は、同じ文字の辺の<b>向かい側</b>の角です。</p>
+      <div class="card w-input">
+        <div class="seg c-dim" role="tablist" aria-label="三角形の種類を選ぶ">
+          <button class="segbtn" role="tab" data-tri="right" aria-selected="true">直角三角形</button>
+          <button class="segbtn" role="tab" data-tri="any" aria-selected="false">一般の三角形</button>
+        </div>
+        <div class="t-fig" id="t-fig"></div>
+        <div class="t-cols"><span>辺の長さ</span><span>向かいの角</span></div>
+        <div class="t-row"><span class="t-lab">a</span>
+          <div class="w-wrap sm"><input id="t-a" type="number" inputmode="decimal" step="any" min="0" placeholder="長さ"><span class="w-unit">mm</span></div>
+          <span class="t-lab">A</span>
+          <div class="w-wrap sm"><input id="t-A" type="number" inputmode="decimal" step="any" min="0" placeholder="角度"><span class="w-unit">°</span></div></div>
+        <div class="t-row"><span class="t-lab">b</span>
+          <div class="w-wrap sm"><input id="t-b" type="number" inputmode="decimal" step="any" min="0" placeholder="長さ"><span class="w-unit">mm</span></div>
+          <span class="t-lab">B</span>
+          <div class="w-wrap sm"><input id="t-B" type="number" inputmode="decimal" step="any" min="0" placeholder="角度"><span class="w-unit">°</span></div></div>
+        <div class="t-row"><span class="t-lab">c</span>
+          <div class="w-wrap sm"><input id="t-c" type="number" inputmode="decimal" step="any" min="0" placeholder="長さ"><span class="w-unit">mm</span></div>
+          <span class="t-lab">C</span>
+          <div class="w-wrap sm"><input id="t-C" type="number" inputmode="decimal" step="any" min="0" placeholder="角度"><span class="w-unit">°</span></div></div>
+        <div class="c-padbar">
+          <button class="btn tiny" id="t-clear">全部クリア</button>
+          <p class="hint">分かっている数字だけ入れてください（3つで決まります）。<b style="color:var(--amber)">オレンジの数字</b>は計算結果です。4つ目を入れると、いちばん古い数字が計算結果に変わります。</p>
+        </div>
+      </div>
+      <div id="t-out" aria-live="polite"></div>
+    </div>
+  </section>
+  <section class="screen" id="scr-cut" hidden>
+  <div class="cut-bar">
+    <button class="btn" id="btnAddItem">＋ 品目を追加</button>
+    <button class="btn" id="btnSample">サンプルを表示</button>
+    <button class="btn" id="btnClear">全部クリア</button>
+    <button class="btn" id="btnExport">入力内容を保存</button>
+    <button class="btn" id="btnImport">読み込み</button>
+  </div>
+  <div class="jobhead">
+    <div class="f"><span class="lbl">案件名 / Job</span><input type="text" id="jobName" placeholder="例：架台フレーム 一式"></div>
+    <div class="f"><span class="lbl">切断日 / Date</span><input type="date" id="jobDate"></div>
+    <div class="f"><span class="lbl">担当 / Operator</span><input type="text" id="jobBy" placeholder="例：第2工場 佐藤"></div>
+  </div>
+
+  <div class="grid">
+    <div class="inputcol" id="inputCol"></div>
+    <div id="outputCol"></div>
+  </div>
+  </section>
+
+  <section class="screen" id="scr-wt" hidden>
+    <div class="wcalc">
+      <p class="w-lead">鋼材の形と寸法・長さ・数量を入れると、概算の重さを出します。何行でも足せて、最後に合計が出ます。</p>
+      <div id="g-rows"></div>
+      <div class="c-padbar" style="margin-top:-4px">
+        <button class="btn" id="g-add">＋ 行を追加</button>
+        <button class="btn tiny" id="g-clear">全部クリア</button>
+        <p class="hint">「規格サイズ」を選ぶと寸法が自動で入ります。一覧にない寸法は、そのまま数字を入れてください。</p>
+      </div>
+      <div id="g-out" aria-live="polite"></div>
+      <p class="w-note">比重　鉄 7.85／ステンレス 7.93／アルミ 2.70 で計算した概算値です</p>
+    </div>
+  </section>
+</div>
+<div id="printSheet"></div>
+<datalist id="stocklens"><option value="4000"></option><option value="5500"></option><option value="6000"></option></datalist>
+
+<script>
+/* ==CORE_START== */
+function num(v,d){var n=parseFloat(v);return Number.isFinite(n)?n:d;}
+
+/* 容量 cap に対し、在庫 avail の範囲で使用長が最大になる組み合わせ（有限個ナップサック） */
+function knapsack(cap,lens,avail,kerf){
+  var n=lens.length,counts=new Array(n).fill(0);
+  var C=Math.floor(cap);
+  if(C<=0)return counts;
+  var eff=lens.map(function(l){return l+kerf;});
+  var dpPrev=new Int32Array(C+1),dpCur=new Int32Array(C+1),cnt=[],i,c,t;
+  for(i=0;i<n;i++){
+    var e=eff[i],a=avail[i],ci=new Int16Array(C+1);
+    if(a<=0||e>C){
+      dpCur.set(dpPrev);
+    }else if(a*e>=C){                       /* 実質無制限：O(C) */
+      for(c=0;c<=C;c++){
+        var b=dpPrev[c],k=0;
+        if(c>=e){var v=dpCur[c-e]+e;if(v>b){b=v;k=ci[c-e]+1;}}
+        dpCur[c]=b;ci[c]=k;
+      }
+    }else{                                   /* 個数制限あり */
+      for(c=0;c<=C;c++){
+        var b2=dpPrev[c],k2=0,lim=Math.min(a,Math.floor(c/e));
+        for(t=1;t<=lim;t++){
+          var v2=dpPrev[c-t*e]+t*e;
+          if(v2>b2){b2=v2;k2=t;}
+        }
+        dpCur[c]=b2;ci[c]=k2;
+      }
+    }
+    cnt.push(ci);
+    var tmp=dpPrev;dpPrev=dpCur;dpCur=tmp;
+  }
+  c=C;
+  for(i=n-1;i>=0;i--){var k3=cnt[i][c];counts[i]=k3;c-=k3*eff[i];}
+  return counts;
+}
+
+/* 1本の材料の切断パターン。残りで最長の部材を必ず1本入れてから詰める（FFD） */
+function fillBar(cap,lens,avail,kerf){
+  var i,forced=-1;
+  for(i=0;i<lens.length;i++){ if(avail[i]>0&&lens[i]+kerf<=cap){forced=i;break;} }
+  if(forced<0)return null;
+  avail[forced]--;
+  var counts=knapsack(cap-(lens[forced]+kerf),lens,avail,kerf);
+  avail[forced]++;
+  counts[forced]++;
+  var used=0,prod=0,cutCount=0;
+  for(i=0;i<lens.length;i++){
+    if(!counts[i])continue;
+    used+=counts[i]*(lens[i]+kerf); prod+=counts[i]*lens[i]; cutCount+=counts[i];
+  }
+  return {counts:counts,used:used,prod:prod,cutCount:cutCount,remnant:cap-used};
+}
+
+function maxRepeat(counts,avail){
+  var r=Infinity;
+  for(var i=0;i<counts.length;i++){ if(counts[i]>0) r=Math.min(r,Math.floor(avail[i]/counts[i])); }
+  return r===Infinity?1:Math.max(1,r);
+}
+
+/* ナップサックは整数の長さでしか正しく動かないので、切りしろ2.5mmのような
+   小数が混じるときは 0.1mm 単位に直して計算する（材料が長すぎるときは安全側に切り上げ） */
+function cutUnit(item){
+  var v=[num(item.kerf,0),num(item.trim,0)],maxLen=0;
+  (item.parts||[]).forEach(function(p){v.push(num(p.len,0));});
+  (item.stocks||[]).forEach(function(s){v.push(num(s.len,0));maxLen=Math.max(maxLen,num(s.len,0));});
+  (item.remnants||[]).forEach(function(r){v.push(num(r.len,0));maxLen=Math.max(maxLen,num(r.len,0));});
+  function fits(u){return v.every(function(x){return Math.abs(x*u-Math.round(x*u))<1e-6;});}
+  if(fits(1))return 1;
+  return (maxLen*10<=200000)?10:1;               /* 10 = 0.1mm単位 */
+}
+
+function solveItem(item){
+  var U=cutUnit(item);
+  var up=function(x){return U===1?Math.ceil(x-1e-9):Math.round(x*U);};   /* U=1のときは安全側に切り上げ */
+  var kerf=Math.max(0,up(num(item.kerf,0)));
+  var trim=Math.max(0,up(num(item.trim,0)));
+
+  var dmap=new Map(),labelMap=new Map();
+  (item.parts||[]).forEach(function(p){
+    var len=up(num(p.len,0)),qty=Math.floor(num(p.qty,0));
+    if(len>0&&qty>0){
+      dmap.set(len,(dmap.get(len)||0)+qty);
+      if(p.label){var s=labelMap.get(len)||[];if(s.indexOf(p.label)<0)s.push(p.label);labelMap.set(len,s);}
+    }
+  });
+  var lens=Array.from(dmap.keys()).sort(function(a,b){return b-a;});
+  var avail=lens.map(function(l){return dmap.get(l);});
+  var need=avail.slice();
+
+  var remnants=(item.remnants||[]).map(function(r){
+      return {len:Math.round(num(r.len,0)*U),qty:Math.floor(num(r.qty,0)),note:r.note||''};
+    }).filter(function(r){return r.len>0&&r.qty>0;}).sort(function(a,b){return a.len-b.len;});
+  var stocks=(item.stocks||[]).map(function(s){
+      var q=(s.qty===''||s.qty==null)?Infinity:Math.floor(num(s.qty,0));
+      return {len:Math.round(num(s.len,0)*U),qty:q};
+    }).filter(function(s){return s.len>0&&s.qty>0;}).sort(function(a,b){return a.len-b.len;});
+
+  var patterns=[],guard=0;
+  function push(src,cap,res,rep,trimUsed){
+    for(var i=0;i<lens.length;i++) avail[i]-=res.counts[i]*rep;
+    patterns.push({
+      type:src.type,srcLen:src.len,note:src.note||'',cap:cap,trim:trimUsed,
+      counts:res.counts.slice(),used:res.used,prod:res.prod,cutCount:res.cutCount,
+      remnant:res.remnant,rep:rep
+    });
+  }
+  var anyLeft=function(){return avail.some(function(a){return a>0;});};
+
+  /* 1) 端材を短い順に消費 */
+  if(item.useRemnantFirst!==false){
+    for(var ri=0;ri<remnants.length;ri++){
+      var r=remnants[ri],left=r.qty;
+      while(left>0&&anyLeft()&&guard++<20000){
+        var res=fillBar(r.len,lens,avail,kerf);
+        if(!res)break;
+        var rep=Math.min(left,maxRepeat(res.counts,avail));
+        push({type:'remnant',len:r.len,note:r.note},r.len,res,rep,0);
+        left-=rep;
+      }
+      r.rest=left;
+    }
+  }else{ remnants.forEach(function(r){r.rest=r.qty;}); }
+
+  /* 2) 定尺：歩留まりが最良の定尺を選ぶ。差5%以内なら長い定尺を優先 */
+  while(anyLeft()&&guard++<20000){
+    var cands=[];
+    for(var si=0;si<stocks.length;si++){
+      var s=stocks[si];
+      if(s.qty<=0)continue;
+      var cap=s.len-trim;
+      var rs=fillBar(cap,lens,avail,kerf);
+      if(!rs)continue;
+      cands.push({eff:rs.prod/s.len,res:rs,s:s,cap:cap});
+    }
+    if(!cands.length)break;
+    var maxEff=Math.max.apply(null,cands.map(function(c){return c.eff;}));
+    var best=cands.filter(function(c){return c.eff>=maxEff*0.95-1e-9;})
+                  .sort(function(a,b){return b.s.len-a.s.len;})[0];
+    var rep2=Math.min(best.s.qty,maxRepeat(best.res.counts,avail));
+    push({type:'stock',len:best.s.len},best.cap,best.res,rep2,trim);
+    best.s.qty-=rep2;
+  }
+
+  var shortage=[],i2;
+  for(i2=0;i2<lens.length;i2++) if(avail[i2]>0) shortage.push({len:lens[i2],qty:avail[i2]});
+
+  var inputLen=0,prodLen=0,barsStock=0,barsRem=0,cuts=0,trimLen=0;
+  var stockUse=new Map(),remOut=new Map();
+  patterns.forEach(function(p){
+    inputLen+=p.srcLen*p.rep; prodLen+=p.prod*p.rep; cuts+=p.cutCount*p.rep; trimLen+=p.trim*p.rep;
+    if(p.type==='stock'){barsStock+=p.rep;stockUse.set(p.srcLen,(stockUse.get(p.srcLen)||0)+p.rep);}
+    else barsRem+=p.rep;
+    if(p.remnant>0) remOut.set(p.remnant,(remOut.get(p.remnant)||0)+p.rep);
+  });
+  var remList=Array.from(remOut.keys()).sort(function(a,b){return b-a;})
+    .map(function(L){return {len:L,qty:remOut.get(L)};});
+  var remLen=remList.reduce(function(a,x){return a+x.len*x.qty;},0);
+  var remQty=remList.reduce(function(a,x){return a+x.qty;},0);
+
+  /* ここから先は表示用に mm へ戻す */
+  var dn=function(x){return x/U;};
+  var lensMM=lens.map(dn),labelMM=new Map();
+  labelMap.forEach(function(v,k){labelMM.set(dn(k),v);});
+  patterns.forEach(function(p){
+    p.srcLen=dn(p.srcLen);p.cap=dn(p.cap);p.trim=dn(p.trim);
+    p.used=dn(p.used);p.prod=dn(p.prod);p.remnant=dn(p.remnant);
+  });
+  shortage.forEach(function(x){x.len=dn(x.len);});
+  remnants.forEach(function(r){r.len=dn(r.len);});
+  remList.forEach(function(x){x.len=dn(x.len);});
+
+  return {
+    lens:lensMM,need:need,labelMap:labelMM,patterns:patterns,shortage:shortage,
+    remnantsRest:remnants,
+    stats:{
+      inputLen:dn(inputLen),prodLen:dn(prodLen),trimLen:dn(trimLen),
+      yield:inputLen>0?prodLen/inputLen:0,
+      barsStock:barsStock,barsRem:barsRem,cuts:cuts,
+      stockUse:Array.from(stockUse.entries()).map(function(e){return [dn(e[0]),e[1]];})
+                                            .sort(function(a,b){return a[0]-b[0];}),
+      remList:remList,remLen:dn(remLen),remQty:remQty
+    }
+  };
+}
+/* ==CORE_END== */
+
+/* ---------------- 形状マスタ ---------------- */
+var SHAPES=[
+ {k:'kaku',n:'角パイプ（正方形）',lab:'角パイプ',pre:'□',stock:5500,
+  sizes:['20×20×1.6','25×25×1.6','25×25×2.3','30×30×1.6','30×30×2.3','40×40×1.6','40×40×2.3','40×40×3.2','50×50×1.6','50×50×2.3','50×50×3.2','60×60×2.3','60×60×3.2','65×65×2.3','75×75×2.3','75×75×3.2','80×80×2.3','80×80×3.2','90×90×3.2','100×100×2.3','100×100×3.2','100×100×4.5','125×125×3.2','125×125×4.5','150×150×4.5','150×150×6.0','200×200×6.0','200×200×8.0']},
+ {k:'kakuR',n:'角パイプ（長方形）',lab:'角パイプ',pre:'',stock:5500,
+  sizes:['50×20×1.6','50×20×2.3','50×30×1.6','50×30×2.3','60×30×1.6','60×30×2.3','60×40×2.3','75×45×2.3','80×40×2.3','80×40×3.2','100×50×2.3','100×50×3.2','100×50×4.5','125×75×3.2','125×75×4.5','150×75×3.2','150×75×4.5','150×100×4.5','200×100×4.5','200×100×6.0']},
+ {k:'pipe',n:'丸パイプ（外径×肉厚）',lab:'丸パイプ',pre:'φ',stock:5500,
+  sizes:['21.7×2.0','27.2×2.0','34.0×2.3','42.7×2.3','48.6×2.3','48.6×3.2','60.5×2.3','60.5×3.2','76.3×2.8','76.3×3.2','89.1×3.2','101.6×3.2','114.3×3.5','139.8×3.6','165.2×4.5','190.7×5.3','216.3×5.8']},
+ {k:'angle',n:'アングル（等辺山形鋼）',lab:'アングル',pre:'L',stock:5500,
+  sizes:['25×25×3','30×30×3','40×40×3','40×40×5','45×45×4','45×45×5','50×50×4','50×50×6','60×60×4','60×60×5','65×65×6','65×65×8','70×70×6','75×75×6','75×75×9','80×80×6','90×90×7','90×90×10','100×100×7','100×100×10','100×100×13','120×120×8','130×130×9','130×130×12','150×150×12','150×150×15']},
+ {k:'angleU',n:'アングル（不等辺山形鋼）',lab:'アングル',pre:'L',stock:5500,
+  sizes:['90×75×9','100×75×7','125×75×7','125×75×10','125×90×10','150×90×9','150×90×12','150×100×9','150×100×12']},
+ {k:'ch',n:'チャンネル（溝形鋼）',lab:'チャンネル',pre:'[',stock:5500,
+  sizes:['75×40×5×7','100×50×5×7.5','125×65×6×8','150×75×6.5×10','180×75×7×10.5','200×80×7.5×11','250×90×9×13','300×90×9×13']},
+ {k:'lip',n:'C形鋼（リップ溝形鋼）',lab:'C形鋼',pre:'C',stock:5500,
+  sizes:['60×30×10×1.6','75×45×15×1.6','75×45×15×2.3','100×50×20×1.6','100×50×20×2.3','120×40×20×2.3','120×60×20×2.3','150×50×20×2.3','150×65×20×2.3','150×65×20×3.2','200×75×25×3.2']},
+ {k:'h',n:'H形鋼',lab:'H形鋼',pre:'H',stock:6000,
+  sizes:['100×100×6×8','125×125×6.5×9','150×75×5×7','150×150×7×10','175×90×5×8','175×175×7.5×11','200×100×5.5×8','200×200×8×12','250×125×6×9','250×250×9×14','300×150×6.5×9','300×300×10×15','350×175×7×11','400×200×8×13']},
+ {k:'fb',n:'フラットバー（平鋼）',lab:'FB',pre:'',stock:5500,
+  sizes:['16×3','19×3','25×3','25×4.5','25×6','25×9','32×4.5','32×6','38×4.5','38×6','44×6','50×4.5','50×6','50×9','50×12','65×6','65×9','75×6','75×9','75×12','90×9','100×6','100×9','100×12','125×9','150×9','150×12']},
+ {k:'round',n:'丸棒',lab:'丸棒',pre:'φ',stock:4000,
+  sizes:['6','8','9','10','12','13','16','19','22','25','28','32','36','38','42','45','50','55','60','65','75','90','100']},
+ {k:'sq',n:'角棒（角鋼）',lab:'角鋼',pre:'□',stock:4000,
+  sizes:['9','12','16','19','22','25','32','38','50']},
+ {k:'other',n:'その他（自由入力）',lab:'',pre:'',stock:5500,sizes:[]}
+];
+var MATS=['SS400','SUS304','STKR400','STK400','SUS316','SUS430','A6063','A5052','A6061','S45C','SPCC','SPHC','SGCC'];
+function shapeOf(k){return SHAPES.filter(function(s){return s.k===k;})[0]||null;}
+function autoName(it){
+  var sh=shapeOf(it.shape);
+  if(!sh||sh.k==='other')return it.name||'';
+  if(!it.size)return sh.lab;
+  return (sh.lab?sh.lab+' ':'')+sh.pre+it.size+(it.mat?' '+it.mat:'');
+}
+function itemTitle(it,idx){
+  var t=it.nameEdited?it.name:autoName(it);
+  return t||('品目 '+String((idx||0)+1).padStart(2,'0'));
+}
+
+/* ---------------- state ---------------- */
+var uid=0;
+function nid(){return 'x'+(++uid);}
+function blankItem(){
+  return {id:nid(),shape:'',size:'',mat:'',name:'',nameEdited:false,
+    kerf:'',trim:'',useRemnantFirst:true,
+    stocks:[{len:'',qty:''}],remnants:[],parts:[{label:'',len:'',qty:''}]};
+}
+function emptyState(){
+  return {jobName:'',jobDate:'',jobBy:'',items:[blankItem()]};
+}
+function sampleState(){
+  return {
+    jobName:'架台フレーム 一式（3号機）',jobDate:new Date().toISOString().slice(0,10),jobBy:'第2工場',
+    items:[
+      {id:nid(),shape:'kaku',size:'50×50×2.3',mat:'SS400',name:'',nameEdited:false,
+       kerf:3,trim:0,useRemnantFirst:true,
+       stocks:[{len:5500,qty:''}],
+       remnants:[{len:1250,qty:2,note:'前回残'},{len:2400,qty:1,note:'前回残'}],
+       parts:[{label:'柱',len:1450,qty:4},{label:'梁',len:1180,qty:6},{label:'補強',len:480,qty:12}]},
+      {id:nid(),shape:'angle',size:'50×50×6',mat:'SS400',name:'',nameEdited:false,
+       kerf:3,trim:20,useRemnantFirst:true,
+       stocks:[{len:5500,qty:''},{len:4000,qty:3}],
+       remnants:[],
+       parts:[{label:'ブラケット',len:620,qty:10},{label:'受け',len:300,qty:8}]}
+    ]
+  };
+}
+var S=null;
+try{var raw=localStorage.getItem('cutplan.v4');if(raw)S=JSON.parse(raw);}catch(e){}
+if(!S||!S.items||!S.items.length)S=emptyState();
+function save(){try{localStorage.setItem('cutplan.v4',JSON.stringify(S));}catch(e){}}
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+/* 小数点以下（0.01mm）まで出すかどうか。機械加工向け */
+var DEC=false;
+try{DEC=localStorage.getItem('kantool.dec')==='1';}catch(e){}
+function fmt(n){return Math.round(n).toLocaleString('ja-JP');}
+function m(n){return (n/1000).toFixed(2);}
+var toastT=null;
+function toast(msg,ms){
+  var el=document.getElementById('toast');
+  if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el);}
+  el.textContent=msg;el.style.display='block';
+  clearTimeout(toastT);toastT=setTimeout(function(){el.style.display='none';},ms||4200);
+}
+
+/* ---------------- input panel ---------------- */
+function rowsHTML(it,kind){
+  var defs={
+    stocks:{cols:[['長さ mm','len','number','5500',' list="stocklens"'],['本数','qty','number','無制限','']],add:'定尺を追加'},
+    remnants:{cols:[['長さ mm','len','number','1250',''],['本数','qty','number','1',''],['メモ','note','text','前回残','']],add:'端材を追加'},
+    parts:{cols:[['部品名','label','text','柱',''],['長さ mm','len','number','1450',''],['本数','qty','number','4','']],add:'寸法を追加'}
+  }[kind];
+  var h='<table class="entry"><thead><tr>';
+  defs.cols.forEach(function(c){h+='<th class="'+(c[2]==='number'?'n':'')+'">'+c[0]+'</th>';});
+  h+='<th></th></tr></thead><tbody>';
+  (it[kind]||[]).forEach(function(row,i){
+    h+='<tr>';
+    defs.cols.forEach(function(c){
+      h+='<td><input type="'+c[2]+'" value="'+esc(row[c[1]])+'" placeholder="'+c[3]+'"'+c[4]+
+         ' data-item="'+it.id+'" data-kind="'+kind+'" data-i="'+i+'" data-f="'+c[1]+'"></td>';
+    });
+    h+='<td><button class="rowdel" data-del="'+kind+'" data-item="'+it.id+'" data-i="'+i+'" title="この行を削除">×</button></td></tr>';
+  });
+  h+='</tbody></table><button class="btn tiny" style="margin-top:6px" data-add="'+kind+'" data-item="'+it.id+'">＋ '+defs.add+'</button>';
+  return h;
+}
+function selHTML(opts,val,attrs,placeholder,disabled){
+  var h='<select '+attrs+(disabled?' disabled':'')+(val?'':' class="unset"')+'>';
+  if(placeholder!=null)h+='<option value=""'+(val?'':' selected')+'>'+esc(placeholder)+'</option>';
+  opts.forEach(function(o){
+    var v=typeof o==='string'?o:o[0],t=typeof o==='string'?o:o[1];
+    h+='<option value="'+esc(v)+'"'+(String(v)===String(val)?' selected':'')+'>'+esc(t)+'</option>';
+  });
+  return h+'</select>';
+}
+function renderInput(){
+  var h='';
+  S.items.forEach(function(it,idx){
+    var sh=shapeOf(it.shape),sizeField;
+    if(!sh){
+      sizeField=selHTML([],'','data-item="'+it.id+'" data-f="size"','先に形状を選択',true);
+    }else if(sh.k==='other'||!sh.sizes.length){
+      sizeField='<input type="text" value="'+esc(it.size)+'" placeholder="サイズを入力"'+(it.size?'':' class="unset"')+' data-item="'+it.id+'" data-f="size">';
+    }else{
+      var opts=sh.sizes.slice();
+      if(it.size&&opts.indexOf(it.size)<0)opts.unshift(it.size);
+      sizeField=selHTML(opts,it.size,'data-item="'+it.id+'" data-f="size"','— 選択 —');
+    }
+    h+='<section class="card"><header>'+
+      '<span class="lbl">品目 '+String(idx+1).padStart(2,'0')+'</span>'+
+      '<h2><input class="itemname" type="text" value="'+esc(it.nameEdited?it.name:autoName(it))+'" placeholder="品名（形状を選ぶと自動入力）" data-item="'+it.id+'" data-f="name"></h2>'+
+      (S.items.length>1?'<button class="rowdel" data-delitem="'+it.id+'" title="品目を削除">×</button>':'')+
+      '</header><div class="body">'+
+      '<div class="spec-grid">'+
+        '<div class="f"><span class="lbl">形状</span>'+selHTML(SHAPES.map(function(s){return [s.k,s.n];}),it.shape,'data-item="'+it.id+'" data-f="shape"','— 選択 —')+'</div>'+
+        '<div class="f"><span class="lbl">サイズ</span>'+sizeField+'</div>'+
+        '<div class="f"><span class="lbl">材質</span>'+selHTML(MATS,it.mat,'data-item="'+it.id+'" data-f="mat"','— 選択 —')+'</div>'+
+      '</div>'+
+      '<fieldset><div class="fs-head"><span class="lbl">切断条件</span></div><div class="settings">'+
+        '<div class="f"><span class="lbl">切りしろ（刃厚）mm</span><input type="number" value="'+esc(it.kerf)+'" placeholder="3" data-item="'+it.id+'" data-f="kerf"></div>'+
+        '<div class="f"><span class="lbl">端切り（頭落とし）mm</span><input type="number" value="'+esc(it.trim)+'" placeholder="0" data-item="'+it.id+'" data-f="trim"></div>'+
+      '</div><p class="hint">端切りは定尺のみに適用（端材は切断済みとして扱います）。</p></fieldset>'+
+      '<fieldset><div class="fs-head"><span class="lbl">定尺材</span></div>'+rowsHTML(it,'stocks')+
+        '<p class="hint">本数を空欄にすると在庫無制限として計算します。</p></fieldset>'+
+      '<fieldset><div class="fs-head"><span class="lbl">手持ち端材</span></div>'+rowsHTML(it,'remnants')+
+        '<p class="hint"><label style="cursor:pointer"><input type="checkbox" style="width:auto" data-item="'+it.id+'" data-f="useRemnantFirst" '+(it.useRemnantFirst!==false?'checked':'')+'> 端材を定尺より優先して使う（短い順に消費）</label></p></fieldset>'+
+      '<fieldset><div class="fs-head"><span class="lbl">切断寸法</span></div>'+rowsHTML(it,'parts')+'</fieldset>'+
+      '</div></section>';
+  });
+  document.getElementById('inputCol').innerHTML=h;
+}
+
+/* ---------------- 画面用 出力 ---------------- */
+function barHTML(p,lens){
+  var segs=[],total=p.srcLen,i,k;
+  if(p.trim>0)segs.push({cls:'trim',len:p.trim,txt:'端切'});
+  var order=[];
+  for(i=0;i<lens.length;i++) if(p.counts[i]>0) for(k=0;k<p.counts[i];k++) order.push(lens[i]);
+  order.forEach(function(L){segs.push({cls:'piece',len:L,txt:fmt(L)});});
+  if(p.remnant>0)segs.push({cls:'rem',len:p.remnant,txt:'残 '+fmt(p.remnant)});
+  var h='<div class="bar">';
+  segs.forEach(function(s){
+    var pct=s.len/total*100;
+    h+='<div class="seg '+s.cls+'" style="flex:0 0 '+pct.toFixed(3)+'%" title="'+esc(s.txt)+' mm"><span>'+(pct>=5.2?esc(s.txt):'')+'</span></div>';
+  });
+  return h+'</div>';
+}
+function renderItemResult(it,R,idx){
+  var st=R.stats;
+  var totalParts=R.need.reduce(function(a,b){return a+b;},0);
+  var h='<section class="res-item"><h2>'+
+    '<span class="lbl" style="color:var(--accent)">'+String(idx+1).padStart(2,'0')+'</span>'+
+    esc(itemTitle(it,idx))+
+    '<span class="spec mono">切りしろ '+num(it.kerf,0)+' / 端切り '+num(it.trim,0)+' mm</span></h2>';
+
+  if(!totalParts){
+    return h+'<div class="empty">左の入力欄に、形状・サイズ・定尺と切断寸法を入れてください。<br>入力するとここに取り数・切断図が出ます。</div></section>';
+  }
+  if(!R.patterns.length&&R.shortage.length){
+    return h+'<div class="alert"><span class="lbl">定尺 未入力</span><div>定尺材の長さが未入力です。「定尺材」に 5500 などを入れてください。</div></div></section>';
+  }
+  if(R.shortage.length){
+    h+='<div class="alert"><span class="lbl">材料不足</span><div>定尺・端材の在庫が足りず、次の寸法が取れません：'+
+      R.shortage.map(function(s){return '<b class="mono">'+fmt(s.len)+'mm × '+s.qty+'本</b>';}).join('、')+
+      '。定尺の本数を増やすか空欄（無制限）にしてください。</div></div>';
+  }
+
+  var stockTxt=st.stockUse.length?st.stockUse.map(function(e){return fmt(e[0])+'×'+e[1];}).join(' / '):'—';
+  h+='<div class="stats">'+
+    '<div class="stat"><div class="lbl">定尺 使用</div><div class="v">'+st.barsStock+'<span class="u">本</span></div><div class="sub mono">'+esc(stockTxt)+'</div></div>'+
+    '<div class="stat"><div class="lbl">端材 使用</div><div class="v">'+st.barsRem+'<span class="u">本</span></div><div class="sub">手持ちから</div></div>'+
+    '<div class="stat '+(st.yield>=0.9?'good':st.yield>=0.8?'':'warn')+'"><div class="lbl">歩留まり</div><div class="v">'+(st.yield*100).toFixed(1)+'<span class="u">%</span></div><div class="sub mono">'+m(st.prodLen)+' / '+m(st.inputLen)+' m</div></div>'+
+    '<div class="stat"><div class="lbl">切断本数</div><div class="v">'+st.cuts+'<span class="u">本</span></div><div class="sub">寸法 '+R.lens.length+'種</div></div>'+
+    '<div class="stat"><div class="lbl">発生端材</div><div class="v">'+st.remQty+'<span class="u">本</span></div><div class="sub mono">計 '+m(st.remLen)+' m</div></div>'+
+  '</div>';
+
+  h+='<div class="tbl-wrap"><table class="out"><thead><tr>'+
+    '<th class="idx">#</th><th>材料</th><th>切断内訳</th><th class="n">製品計</th><th class="n">端材</th><th class="n">本数</th>'+
+    '</tr></thead><tbody>';
+  R.patterns.forEach(function(p,i){
+    var chips=[];
+    for(var j=0;j<R.lens.length;j++){
+      if(!p.counts[j])continue;
+      var lab=(R.labelMap.get(R.lens[j])||[]).join('/');
+      chips.push('<span class="chip">'+fmt(R.lens[j])+' × '+p.counts[j]+(lab?' <span style="opacity:.75">'+esc(lab)+'</span>':'')+'</span>');
+    }
+    h+='<tr><td class="idx">'+(i+1)+'</td>'+
+      '<td><b class="mono">'+fmt(p.srcLen)+'</b><br><span class="sub">'+(p.type==='stock'?'定尺':'端材'+(p.note?'（'+esc(p.note)+'）':''))+'</span></td>'+
+      '<td><div class="cutlist">'+chips.join('')+'</div></td>'+
+      '<td class="n">'+fmt(p.prod)+'</td>'+
+      '<td class="n" style="color:var(--amber)">'+(p.remnant>0?fmt(p.remnant):'—')+'</td>'+
+      '<td class="n"><b>'+p.rep+'</b></td></tr>';
+  });
+  h+='</tbody></table></div>';
+
+  h+='<h3 class="sect-title">切断図</h3><div class="bars">';
+  R.patterns.forEach(function(p,i){
+    h+='<div class="barrow"><div class="barmeta">'+
+      '<div class="src">'+fmt(p.srcLen)+' mm</div>'+
+      '<div class="kind'+(p.type==='remnant'?' rem':'')+'">'+(p.type==='stock'?'定尺':'端材'+(p.note?'・'+esc(p.note):''))+'</div>'+
+      '<div class="rep mono">パターン'+(i+1)+' × '+p.rep+'本</div>'+
+      '</div>'+barHTML(p,R.lens)+'</div>';
+  });
+  h+='</div><div class="legend">'+
+    '<span><i class="p"></i>製品</span><span><i class="r"></i>端材</span>'+
+    '<span><i class="d"></i>端切り</span>'+
+    '<span class="sub">※ 各製品の後ろに切りしろ '+num(it.kerf,0)+'mm を見込み済み</span></div>';
+
+  h+='<h3 class="sect-title">寸法別 取り数チェック</h3><div class="tbl-wrap"><table class="out"><thead><tr>'+
+    '<th>部品</th><th class="n">長さ</th><th class="n">必要</th><th class="n">手配</th><th class="n">過不足</th></tr></thead><tbody>';
+  R.lens.forEach(function(L,j){
+    var made=0;R.patterns.forEach(function(p){made+=p.counts[j]*p.rep;});
+    var diff=made-R.need[j];
+    h+='<tr><td>'+esc((R.labelMap.get(L)||[]).join(' / ')||'—')+'</td>'+
+      '<td class="n">'+fmt(L)+'</td><td class="n">'+R.need[j]+'</td><td class="n">'+made+'</td>'+
+      '<td class="n" style="color:'+(diff<0?'var(--red)':'var(--green)')+'">'+(diff>=0?'✓':diff)+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+
+  var restRem=R.remnantsRest.filter(function(r){return r.rest>0;});
+  if(restRem.length||st.remList.length){
+    h+='<h3 class="sect-title">切断後に残る端材</h3><div class="tbl-wrap"><table class="out"><thead><tr>'+
+      '<th>区分</th><th class="n">長さ</th><th class="n">本数</th></tr></thead><tbody>';
+    st.remList.forEach(function(x){h+='<tr><td>今回発生</td><td class="n">'+fmt(x.len)+'</td><td class="n">'+x.qty+'</td></tr>';});
+    restRem.forEach(function(r){h+='<tr><td>手持ち端材の未使用'+(r.note?'（'+esc(r.note)+'）':'')+'</td><td class="n">'+fmt(r.len)+'</td><td class="n">'+r.rest+'</td></tr>';});
+    h+='</tbody></table></div>';
+  }
+  return h+'</section>';
+}
+
+/* ---------------- 印刷シート（A4想定・情報を1枚に凝縮） ---------------- */
+function sheetBar(p,R){
+  var segs=[],total=p.srcLen,i,k;
+  if(p.trim>0)segs.push({c:'t',len:p.trim,t:'端切',l:''});
+  var order=[];
+  for(i=0;i<R.lens.length;i++) if(p.counts[i]>0) for(k=0;k<p.counts[i];k++) order.push(R.lens[i]);
+  order.forEach(function(L){
+    segs.push({c:'p',len:L,t:fmt(L),l:(R.labelMap.get(L)||[]).join('/')});
+  });
+  if(p.remnant>0)segs.push({c:'r',len:p.remnant,t:'残 '+fmt(p.remnant),l:''});
+  var h='<div class="sh-bar">',BARPT=420;
+  function tw(str,sz){var w=0;for(var i=0;i<str.length;i++)w+=str.charCodeAt(i)>255?sz*1.0:sz*0.61;return w;}
+  segs.forEach(function(s){
+    var pct=s.len/total*100,body='',w=pct/100*BARPT;
+    var wNum=tw(s.t,7.5)+5, wAll=wNum+(s.l?tw(s.l,6.5)+6:0);
+    if(s.l&&w>=wAll)body=esc(s.t)+'<em>'+esc(s.l)+'</em>';
+    else if(w>=wNum)body=esc(s.t);
+    h+='<div class="sh-seg '+s.c+'" style="flex:0 0 '+pct.toFixed(3)+'%" title="'+esc(s.t+(s.l?' '+s.l:''))+'">'+body+'</div>';
+  });
+  return h+'</div>';
+}
+function sheetItem(it,R,idx){
+  var st=R.stats;
+  var h='<div class="sh-item"><div class="sh-ih">'+
+    '<span class="no">'+String(idx+1).padStart(2,'0')+'</span>'+
+    '<span class="nm">'+esc(itemTitle(it,idx))+'</span>';
+  if(R.patterns.length){
+    h+='<span class="st">切りしろ '+num(it.kerf,0)+' / 端切り '+num(it.trim,0)+' mm　｜　定尺 <b>'+st.barsStock+'</b>本'+
+      (st.stockUse.length?'（'+st.stockUse.map(function(e){return fmt(e[0])+'×'+e[1];}).join('・')+'）':'')+
+      '　端材 <b>'+st.barsRem+'</b>本　歩留 <b>'+(st.yield*100).toFixed(1)+'</b>%　切断 <b>'+st.cuts+'</b>本</span>';
+  }
+  h+='</div>';
+  if(!R.patterns.length)return h+'<div class="sh-foot">（未入力）</div></div>';
+  if(R.shortage.length){
+    h+='<div class="sh-warn">材料不足：'+R.shortage.map(function(s){return fmt(s.len)+'mm × '+s.qty+'本 が取れません';}).join('／')+'</div>';
+  }
+  h+='<table class="sh-cut"><tbody>';
+  R.patterns.forEach(function(p,i){
+    h+='<tr><td class="no">'+(i+1)+'</td>'+
+      '<td class="src">'+fmt(p.srcLen)+'<span>'+(p.type==='stock'?'定尺':'端材'+(p.note?'・'+esc(p.note):''))+'</span></td>'+
+      '<td>'+sheetBar(p,R)+'</td>'+
+      '<td class="qty">×'+p.rep+'本</td></tr>';
+  });
+  h+='</tbody></table>';
+
+  var chk=R.lens.map(function(L,j){
+    var made=0;R.patterns.forEach(function(p){made+=p.counts[j]*p.rep;});
+    var lab=(R.labelMap.get(L)||[]).join('/');
+    return (lab?esc(lab)+' ':'')+fmt(L)+'×'+R.need[j]+(made>=R.need[j]?' ✓':' <span class="ng">不足'+(R.need[j]-made)+'</span>');
+  }).join('　/　');
+  var rem=st.remList.length?st.remList.map(function(x){return fmt(x.len)+(x.qty>1?'×'+x.qty:'');}).join('・'):'なし';
+  h+='<div class="sh-foot"><span><b>切断内訳</b> '+chk+'</span><span><b>発生端材</b> '+rem+'</span></div>';
+  return h+'</div>';
+}
+function buildSheet(results){
+  var h='<div class="sh-head"><div class="sh-title">切断指示書</div><div class="sh-meta">'+
+    '<span>案件<b>'+esc(S.jobName||'—')+'</b></span>'+
+    '<span>切断日<b>'+esc(S.jobDate||'—')+'</b></span>'+
+    '<span>担当<b>'+esc(S.jobBy||'—')+'</b></span></div></div>';
+  S.items.forEach(function(it,i){h+=sheetItem(it,results[i],i);});
+  h+='<div class="sh-legend"><span><i class="p"></i>製品</span><span><i class="r"></i>端材</span>'+
+     '<span><i class="t"></i>端切り</span><span>数値は mm。各製品の後ろに切りしろを見込み済み。</span></div>';
+  return h;
+}
+
+function renderOutput(){
+  var results=S.items.map(solveItem);
+  var h='';
+  S.items.forEach(function(it,i){h+=renderItemResult(it,results[i],i);});
+  document.getElementById('outputCol').innerHTML=h;
+  document.getElementById('printSheet').innerHTML=buildSheet(results);
+}
+
+/* ---------------- A4 1枚に収める ---------------- */
+var FIT_SRC=function fitSheet(doc,win){
+  var el=doc.getElementById('printSheet');
+  if(!el)return {k:1,fit:true};
+  doc.documentElement.style.setProperty('--sheetScale',1);
+  var prevD=el.style.display,prevW=el.style.width,prevP=el.style.position;
+  el.style.display='block';el.style.position='static';
+  function meas(wmm,hmm){
+    el.style.width=wmm+'mm';
+    var h=el.getBoundingClientRect().height;
+    var maxH=hmm*96/25.4;
+    return h>0?maxH/h:1;
+  }
+  var k=meas(188,275),orient='portrait';
+  el.style.display=prevD;el.style.width=prevW;el.style.position=prevP;
+  var fit=k>=0.42;
+  k=Math.min(1,Math.max(0.42,k));
+  doc.documentElement.style.setProperty('--sheetScale',k);
+  var ps=doc.getElementById('pageStyle');
+  if(ps)ps.textContent='@page{size:A4 '+orient+';margin:11mm}';
+  return {k:k,orient:orient,fit:fit};
+};
+function fitSheet(){return FIT_SRC(document,window);}
+
+/* ---------------- 保存・印刷 ---------------- */
+function buildPrintDoc(){
+  var css=document.getElementById('appStyle').textContent;
+  var extra='#printSheet{display:block!important;max-width:188mm;margin:0 auto;padding:8mm 0}'+
+            'body{background:#F2F2F2!important;color:#111!important}'+
+            '@media print{body{background:#fff!important}#printSheet{max-width:none;margin:0;padding:0}}';
+  return '<!doctype html><html lang="ja" data-theme="light"><head><meta charset="utf-8">'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>切断指示書'+(S.jobName?' '+esc(S.jobName):'')+'</title>'+
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Roboto+Mono:wght@400;500;700&display=swap">'+
+    '<style id="pageStyle">@page{size:A4 portrait;margin:11mm}</style>'+
+    '<style>'+css+'\n'+extra+'</style></head><body>'+
+    '<div id="printSheet">'+document.getElementById('printSheet').innerHTML+'</div>'+
+    '<scr'+'ipt>var FIT='+FIT_SRC.toString()+';'+
+    'window.addEventListener("load",function(){setTimeout(function(){FIT(document,window);setTimeout(function(){window.print();},120);},350);});'+
+    '</scr'+'ipt></body></html>';
+}
+function triHead(){
+  function v(id){var e=document.getElementById(id);return e.value===''?'—':e.value;}
+  return '<div class="sh-head"><div class="sh-title">三角計算</div><div class="sh-meta">'+
+    '<span>'+(T_RIGHT?'直角三角形（C=90°）':'一般の三角形')+'</span>'+
+    '<span>入力<b>a '+esc(v('t-a'))+' / b '+esc(v('t-b'))+' / c '+esc(v('t-c'))+
+    ' ・ A '+esc(v('t-A'))+' / B '+esc(v('t-B'))+' / C '+esc(v('t-C'))+'</b></span></div></div>';
+}
+/* 三角計算の印刷用ドキュメント */
+function buildTriDoc(){
+  var css=document.getElementById('appStyle').textContent;
+  var extra='body{background:#fff!important;color:#111!important;padding:0}'+
+    '.wprint{max-width:188mm;margin:0 auto;padding:8mm}'+
+    '.w-stats,.w-ruler,.tbl-wrap{break-inside:avoid}'+
+    '@media print{.wprint{max-width:none;padding:0}}';
+  return '<!doctype html><html lang="ja" data-theme="light"><head><meta charset="utf-8">'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>三角計算</title>'+
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Roboto+Mono:wght@400;500;700&display=swap">'+
+    '<style id="pageStyle">@page{size:A4 portrait;margin:11mm}</style>'+
+    '<style>'+css+'\n'+extra+'</style></head><body><div class="wprint">'+
+    triHead()+'<div class="card w-ruler">'+document.getElementById('t-fig').innerHTML+'</div>'+
+    document.getElementById('t-out').innerHTML+'</div>'+
+    '<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){window.print();},450);});</scr'+'ipt>'+
+    '</body></html>';
+}
+/* 円周割付の印刷用ドキュメント */
+function buildCircleDoc(){
+  var out=document.getElementById('c-out').innerHTML.replace(/<details class="w-more"/g,'<details class="w-more" open');
+  var css=document.getElementById('appStyle').textContent;
+  var extra='body{background:#fff!important;color:#111!important;padding:0}'+
+    '.wprint{max-width:188mm;margin:0 auto;padding:8mm}'+
+    '.w-more summary{display:none!important}'+
+    '.w-stats,.w-ruler,.tbl-wrap{break-inside:avoid}'+
+    '@media print{.wprint{max-width:none;padding:0}}';
+  return '<!doctype html><html lang="ja" data-theme="light"><head><meta charset="utf-8">'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>円周 穴位置</title>'+
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Roboto+Mono:wght@400;500;700&display=swap">'+
+    '<style id="pageStyle">@page{size:A4 portrait;margin:11mm}</style>'+
+    '<style>'+css+'\n'+extra+'</style></head><body><div class="wprint">'+
+    circleHead()+out+'</div>'+
+    '<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){window.print();},450);});</scr'+'ipt>'+
+    '</body></html>';
+}
+/* 溶接ピッチの印刷用ドキュメント */
+function buildWeldDoc(){
+  var stag=!document.getElementById('w-stagger').hidden;
+  function v(id){return document.getElementById(id).value;}
+  var L,w,pt,out;
+  if(stag){L=v('s-len');w=v('s-weld');pt=v('s-pitch');out=document.getElementById('s-out').innerHTML;}
+  else{L=v('p-len');w=v('p-weld');pt=v('p-pitch');out=document.getElementById('p-out').innerHTML;}
+  out=out.replace(/<details class="w-more"/g,'<details class="w-more" open');
+  var css=document.getElementById('appStyle').textContent;
+  var extra='body{background:#fff!important;color:#111!important;padding:0}'+
+    '.wprint{max-width:188mm;margin:0 auto;padding:8mm}'+
+    '.w-list{max-height:none!important;overflow:visible!important}'+
+    '.w-more summary{display:none!important}'+
+    '.w-row,.w-stats,.w-ruler{break-inside:avoid}'+
+    '@media print{.wprint{max-width:none;padding:0}}';
+  return '<!doctype html><html lang="ja" data-theme="light"><head><meta charset="utf-8">'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>溶接ピッチ'+(stag?'（千鳥）':'')+'</title>'+
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Roboto+Mono:wght@400;500;700&display=swap">'+
+    '<style id="pageStyle">@page{size:A4 portrait;margin:11mm}</style>'+
+    '<style>'+css+'\n'+extra+'</style></head><body><div class="wprint">'+
+    '<div class="sh-head"><div class="sh-title">溶接ピッチ指示'+(stag?'（千鳥）':'')+'</div>'+
+    '<div class="sh-meta"><span>母材長さ<b>'+esc(L)+' mm</b></span>'+
+    '<span>溶接長<b>'+esc(w)+' mm</b></span><span>基準ピッチ<b>'+esc(pt)+' mm</b></span></div></div>'+
+    out+'</div>'+
+    '<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){window.print();},450);});</scr'+'ipt>'+
+    '</body></html>';
+}
+
+/* ---- モーダル ---- */
+function closeModal(){var m=document.getElementById('modal');if(m)m.remove();}
+function showModal(title,bodyHTML,footHTML){
+  closeModal();
+  var d=document.createElement('div');d.className='modal';d.id='modal';
+  d.innerHTML='<div class="modal-box" role="dialog" aria-modal="true">'+
+    '<div class="modal-head"><h3>'+esc(title)+'</h3><button class="rowdel" data-mclose="1" title="閉じる">×</button></div>'+
+    '<div class="modal-body">'+bodyHTML+'</div>'+
+    '<div class="modal-foot">'+(footHTML||'')+'<button class="btn" data-mclose="1">閉じる</button></div></div>';
+  document.body.appendChild(d);
+  d.addEventListener('click',function(e){
+    if(e.target===d||(e.target.closest&&e.target.closest('[data-mclose]')))closeModal();
+  });
+  document.addEventListener('keydown',function esc2(e){
+    if(e.key==='Escape'){closeModal();document.removeEventListener('keydown',esc2);}
+  });
+  return d;
+}
+function copyText(str,okMsg){
+  var done=function(){toast(okMsg||'コピーしました。');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(str).then(done).catch(function(){selectFallback();});
+  }else selectFallback();
+  function selectFallback(){
+    var ta=document.querySelector('#modal textarea');
+    if(ta){ta.focus();ta.select();toast('全選択しました。Ctrl+C（Macは ⌘+C）でコピーしてください。',6000);}
+    else toast('コピーできませんでした。');
+  }
+}
+
+/* ---- 保存（downloads が使えない公開ページではコピー方式） ---- */
+var DL=null,DLchecked=false;
+function initDownloads(){
+  var pr=(window.claude&&window.claude.use)?window.claude.use('downloads'):Promise.resolve(null);
+  return pr.then(function(d){
+    DL=d;DLchecked=true;
+    document.getElementById('btnPrintFile').hidden=!(d||!window.claude);
+  }).catch(function(){DLchecked=true;});
+}
+function saveFile(name,text,mime){
+  if(DL){
+    return DL.save({filename:name,data:text})
+      .then(function(){toast('「'+name+'」を保存しました。');})
+      .catch(function(e){ if(!e||e.code!=='declined')toast('保存できませんでした（'+((e&&e.code)||'error')+'）'); });
+  }
+  if(!window.claude){
+    var blob=new Blob([text],{type:mime||'text/plain'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=name;document.body.appendChild(a);a.click();a.remove();
+    toast('「'+name+'」を保存しました。');
+    return Promise.resolve();
+  }
+  var d=showModal('入力内容の書き出し',
+    '<p>このページではファイル保存が使えないため、下の文字列をコピーして保存してください。メモ帳などに貼り付けて <b>'+esc(name)+'</b> という名前で保存しておくと、あとで「読み込み」から戻せます。</p>'+
+    '<textarea readonly id="mText">'+esc(text)+'</textarea>',
+    '<button class="btn primary" id="mCopy">コピー</button>');
+  d.querySelector('#mCopy').addEventListener('click',function(){copyText(text);});
+  var ta=d.querySelector('#mText'); if(ta){ta.focus();ta.select();}
+  return Promise.resolve();
+}
+function safeName(s){return String(s||'切断指示書').replace(/[\\\/:*?"<>|]/g,'_').slice(0,60);}
+
+/* ---- 印刷 ----
+   公開ページはサンドボックス内で動くため、新しいタブ・印刷ダイアログ・ファイル保存が
+   ブロックされることがある。そこで
+     1) まず印刷ダイアログを試す（beforeprint が発火したかで成否を判定）
+     2) ダメなら指示書を画像に変換して画面に出す（右クリック／長押しで保存して印刷）
+   という順で処理する。画像化は SVG の foreignObject + canvas で、外部ライブラリを使わない。 */
+/* 画像やファイルに出すときは、端末のダークモードに関係なく明るい配色にする。
+   SVGのforeignObjectの中では :root の data-theme が効かないので、.shot に直接色を指定する */
+var LIGHT_VARS='.shot{--ground:#EDF0F3;--surface:#ffffff;--surface2:#F5F7F9;'+
+  '--ink:#12171C;--ink2:#4C5763;--ink3:#7B8894;--line:#D3D9E0;--lineS:#B4BEC8;'+
+  '--accent:#17539E;--accentSoft:#E4ECF8;--onAccent:#ffffff;'+
+  '--amber:#8F5C00;--amberSoft:#FAEFD8;--red:#AF3527;--redSoft:#FAE6E3;--green:#1D6B4D;'+
+  '--piece:#DDE8F6;--pieceLine:#9DBADD;--scrap:#E1E5E9;'+
+  '--shadow:none;color-scheme:light;background:#ffffff;color:#12171C}';
+var PRINT_FIRED=false;
+window.addEventListener('beforeprint',function(){PRINT_FIRED=true;});
+
+function circleHead(){
+  return '<div class="sh-head"><div class="sh-title">円周 穴位置</div><div class="sh-meta">'+
+    '<span>'+(C_DIM==='dia'?'直径 φ':'半径 R')+'<b>'+esc(document.getElementById('c-size').value)+' mm</b></span>'+
+    '<span>角度<b>'+esc(cHoles().map(function(h){return Math.round(h.a*100)/100;}).join(', '))+' °</b></span></div></div>';
+}
+function shotInnerHTML(){
+  if(curTab==='cut'){
+    return '<div id="printSheet">'+document.getElementById('printSheet').innerHTML+'</div>';
+  }
+  if(curTab==='circle'){
+    return circleHead()+document.getElementById('c-out').innerHTML
+      .replace(/<details class="w-more"/g,'<details class="w-more" open');
+  }
+  if(curTab==='wt'){
+    return gHead()+document.getElementById('g-out').innerHTML
+      .replace(/<details class="w-more"/g,'<details class="w-more" open');
+  }
+  if(curTab==='tri'){
+    return triHead()+'<div class="card w-ruler">'+document.getElementById('t-fig').innerHTML+'</div>'+
+           document.getElementById('t-out').innerHTML;
+  }
+  var stag=!document.getElementById('w-stagger').hidden;
+  function v(id){return document.getElementById(id).value;}
+  var L,w,pt,out;
+  if(stag){L=v('s-len');w=v('s-weld');pt=v('s-pitch');out=document.getElementById('s-out').innerHTML;}
+  else{L=v('p-len');w=v('p-weld');pt=v('p-pitch');out=document.getElementById('p-out').innerHTML;}
+  out=out.replace(/<details class="w-more"/g,'<details class="w-more" open');
+  return '<div class="sh-head"><div class="sh-title">溶接ピッチ指示'+(stag?'（千鳥）':'')+'</div>'+
+    '<div class="sh-meta"><span>母材長さ<b>'+esc(L)+' mm</b></span>'+
+    '<span>溶接長<b>'+esc(w)+' mm</b></span>'+
+    '<span>基準ピッチ<b>'+esc(pt)+' mm</b></span></div></div>'+out;
+}
+
+function makeSheetImage(){
+  return new Promise(function(resolve,reject){
+    /* A4縦 200dpi。余白 11mm。ここに収まるよう内容を自動縮小する */
+    var DPI=200, MM=DPI/25.4;
+    var A4W=Math.round(210*MM), A4H=Math.round(297*MM), M=Math.round(11*MM);
+    var availW=A4W-2*M, availH=A4H-2*M;
+    var W=710;                                   /* 組版幅＝188mm 相当 */
+
+    var outer=document.createElement('div');
+    outer.style.cssText='position:fixed;left:-20000px;top:0;width:'+(W+60)+'px;z-index:-1;pointer-events:none';
+    var host=document.createElement('div');
+    host.setAttribute('class','shot');
+    host.style.cssText='width:'+W+'px;background:#ffffff;color:#111111;box-sizing:border-box;'+
+      'font-family:"BIZ UDPGothic","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif';
+    var st=document.createElement('style');
+    st.textContent=document.getElementById('appStyle').textContent+'\n'+LIGHT_VARS;
+    host.appendChild(st);
+    var body=document.createElement('div');
+    body.innerHTML=shotInnerHTML();
+    host.appendChild(body);
+    outer.appendChild(host);
+    document.body.appendChild(outer);
+
+    function contentH(){
+      var top=host.getBoundingClientRect().top;
+      return Math.ceil(Math.max(body.getBoundingClientRect().bottom-top,
+                                host.getBoundingClientRect().height))||600;
+    }
+    var rows=host.querySelectorAll('.sh-cut tr').length+host.querySelectorAll('.w-row').length+
+             host.querySelectorAll('table.out tbody tr').length;
+    var H=contentH();
+    /* 1枚に入りきらないときは、まず余白を詰めてから縮小する */
+    if(rows>14||H>availH/(availW/W)){ host.classList.add('dense'); H=contentH(); }
+
+    var ser;
+    try{ ser=new XMLSerializer().serializeToString(host); }
+    catch(e){ outer.remove(); reject(e); return; }
+    outer.remove();
+
+    var scale=Math.min(availW/W, availH/H);
+    var dw=Math.round(W*scale), dh=Math.round(H*scale);
+    var shrink=scale/(availW/W);                 /* 1.0 なら横幅いっぱい */
+
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+dw+'" height="'+dh+'" '+
+      'viewBox="0 0 '+W+' '+H+'"><rect width="100%" height="100%" fill="#ffffff"/>'+
+      '<foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'+ser+'</foreignObject></svg>';
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var c=document.createElement('canvas');
+        c.width=A4W;c.height=A4H;
+        var cx=c.getContext('2d');
+        cx.fillStyle='#ffffff';cx.fillRect(0,0,A4W,A4H);
+        cx.drawImage(img,M+Math.round((availW-dw)/2),M,dw,dh);
+        resolve({png:c.toDataURL('image/png'),shrink:shrink,pages:1});
+      }catch(e){reject(e);}
+    };
+    img.onerror=function(){reject(new Error('svg'));};
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  });
+}
+
+function showSheetImage(res,head){
+  var isCut=(curTab==='cut');
+  var name=(isCut?safeName(S.jobName)+'_切断指示書':curTab==='circle'?'円周_穴位置':curTab==='tri'?'三角計算':curTab==='wt'?'重量計算':'溶接ピッチ')+'.png';
+  var warn=res.shrink<0.55
+    ? '<p style="color:var(--red)"><b>内容が多いため、かなり縮小して1枚に収めています。</b>'+
+      '文字が小さければ、品目を分けて出力してください。</p>' : '';
+  var d=showModal(head||'指示書（A4縦）',
+    (head?'<p>このページでは印刷ダイアログを開けませんでした。かわりに<b>A4縦サイズの画像</b>を作りました。</p>':
+          '<p><b>A4縦サイズの画像</b>です。</p>')+
+    '<p>画像を<b>右クリック →「名前を付けて画像を保存」</b>（スマホは長押し）で保存し、'+
+    '開いて印刷してください。すでにA4縦の紙面ぴったりに作ってあるので、'+
+    '印刷設定は<b>用紙A4・縦・「用紙に合わせる」</b>のままでそのまま出ます。'+
+    'ファイル名は <b>'+esc(name)+'</b> がおすすめです。</p>'+warn+
+    '<p style="border-left:3px solid var(--accent);padding-left:10px">'+
+    '<b>右クリックや印刷が効かないとき</b>：Claudeのアプリの中では保存・印刷が制限されることがあります。'+
+    'このページのURLをコピーして、Chromeなどのブラウザで開き直してください。</p>'+
+    '<div class="imgwrap"><img id="mImg" alt="指示書" src="'+res.png+'"></div>','');
+  return d;
+}
+
+function doPrint(){
+  if(curTab==='cut'){
+    var r=fitSheet();
+    if(!r.fit)toast('内容が多いため、かなり縮小してA4 1枚に収めます。',6000);
+  }
+  PRINT_FIRED=false;
+  try{window.print();}catch(e){}
+  setTimeout(function(){
+    if(PRINT_FIRED)return;                 /* 印刷ダイアログが出たので何もしない */
+    makeSheetImage().then(function(res){
+      showSheetImage(res,'印刷ダイアログを開けませんでした');
+    }).catch(function(){
+      showModal('印刷できませんでした',
+        '<p>このページでは印刷ダイアログもファイル保存も使えない設定になっています。'+
+        '画面をスクリーンショットで残すか、別の方法をご相談ください。</p>','');
+    });
+  },500);
+}
+function doImage(){
+  makeSheetImage().then(function(res){showSheetImage(res,null);})
+    .catch(function(){toast('画像を作れませんでした。');});
+}
+
+/* ---------------- wiring ---------------- */
+function findItem(id){return S.items.filter(function(x){return x.id===id;})[0];}
+var t=null;
+function schedule(){clearTimeout(t);t=setTimeout(function(){renderOutput();save();},160);}
+
+function applyField(el){
+  var id=el.getAttribute('data-item');if(!id)return false;
+  var it=findItem(id);if(!it)return false;
+  var kind=el.getAttribute('data-kind'),f=el.getAttribute('data-f');
+  if(kind){it[kind][+el.getAttribute('data-i')][f]=el.value;return true;}
+  if(!f)return false;
+  if(el.type==='checkbox'){it[f]=el.checked;return true;}
+  if(f==='name'){it.name=el.value;it.nameEdited=true;return true;}
+  if(f==='shape'){
+    var old=shapeOf(it.shape),sh=shapeOf(el.value);
+    it.shape=el.value;
+    it.size=(sh&&sh.sizes.length&&sh.sizes.indexOf(it.size)>=0)?it.size:'';
+    if(sh&&!it.mat)it.mat='SS400';
+    if(sh&&it.stocks.length===1&&(it.stocks[0].qty===''||it.stocks[0].qty==null)&&
+       (!it.stocks[0].len||(old&&num(it.stocks[0].len,0)===old.stock)))
+      it.stocks[0].len=sh.stock;
+    it.nameEdited=false;
+    renderInput();return true;
+  }
+  it[f]=el.value;
+  if(f==='size'||f==='mat')it.nameEdited=false;
+  return true;
+}
+document.addEventListener('input',function(e){
+  var el=e.target;
+  if(el.id==='jobName'){S.jobName=el.value;save();schedule();return;}
+  if(el.id==='jobDate'){S.jobDate=el.value;save();schedule();return;}
+  if(el.id==='jobBy'){S.jobBy=el.value;save();schedule();return;}
+  if(applyField(el))schedule();
+});
+document.addEventListener('change',function(e){
+  var el=e.target;
+  if(el.tagName==='SELECT'||el.type==='checkbox'){
+    if(applyField(el)){
+      var f=el.getAttribute('data-f');
+      if(f==='size'||f==='mat'){
+        var it=findItem(el.getAttribute('data-item'));
+        var nm=document.querySelector('.itemname[data-item="'+it.id+'"]');
+        if(nm)nm.value=autoName(it);
+        if(el.tagName==='SELECT'){el.classList.toggle('unset',!el.value);}
+      }
+      schedule();
+    }
+  }
+});
+document.addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  var id=b.getAttribute('data-item'),it=id?findItem(id):null;
+  if(b.hasAttribute('data-add')&&it){
+    var k=b.getAttribute('data-add');
+    it[k].push(k==='stocks'?{len:'',qty:''}:k==='remnants'?{len:'',qty:'',note:''}:{label:'',len:'',qty:''});
+    renderInput();renderOutput();save();
+  }else if(b.hasAttribute('data-del')&&it){
+    it[b.getAttribute('data-del')].splice(+b.getAttribute('data-i'),1);
+    renderInput();renderOutput();save();
+  }else if(b.hasAttribute('data-delitem')){
+    S.items=S.items.filter(function(x){return x.id!==b.getAttribute('data-delitem');});
+    renderInput();renderOutput();save();
+  }
+});
+document.getElementById('btnAddItem').onclick=function(){S.items.push(blankItem());renderInput();renderOutput();save();};
+/* 画面の明るさ。既定は明るい（工場で見やすいように） */
+var THEME='light';
+try{THEME=localStorage.getItem('kantool.theme')||'light';}catch(e){}
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme',THEME);
+  document.getElementById('btnTheme').textContent=(THEME==='dark')?'画面を明るく':'画面を暗く';
+}
+document.getElementById('btnTheme').onclick=function(){
+  THEME=(THEME==='dark')?'light':'dark';
+  try{localStorage.setItem('kantool.theme',THEME);}catch(e){}
+  applyTheme();
+};
+function applyDec(){
+  document.getElementById('btnDec').setAttribute('aria-pressed',DEC?'true':'false');
+  var n=document.querySelector('#scr-circle .w-note');
+  if(n)n.textContent=DEC?'結果を0.01mm単位で表示しています':'結果は1mm未満を四捨五入して表示しています';
+  cRebuild();
+}
+document.getElementById('btnDec').onclick=function(){
+  DEC=!DEC;
+  try{localStorage.setItem('kantool.dec',DEC?'1':'0');}catch(e){}
+  applyDec();
+  toast(DEC?'0.01mm単位で表示します。':'1mm単位（四捨五入）で表示します。',2600);
+};
+document.getElementById('btnPrint').onclick=doPrint;
+document.getElementById('btnImage').onclick=doImage;
+document.getElementById('btnPrintFile').onclick=function(){
+  if(curTab==='cut'){
+    var r=fitSheet();
+    saveFile(safeName(S.jobName)+'_切断指示書.html',buildPrintDoc(),'text/html');
+    if(!r.fit)toast('内容が多くA4 1枚に収まらないため、複数ページになります。',6000);
+  }else if(curTab==='circle'){
+    saveFile('円周_穴位置.html',buildCircleDoc(),'text/html');
+  }else if(curTab==='tri'){
+    saveFile('三角計算.html',buildTriDoc(),'text/html');
+  }else if(curTab==='wt'){
+    saveFile('重量計算.html',buildWtDoc(),'text/html');
+  }else{
+    saveFile('溶接ピッチ.html',buildWeldDoc(),'text/html');
+  }
+};
+document.getElementById('btnSample').onclick=function(){S=sampleState();boot();save();};
+document.getElementById('btnClear').onclick=function(){S=emptyState();boot();save();toast('入力内容をすべてクリアしました。');};
+document.getElementById('btnExport').onclick=function(){
+  saveFile(safeName(S.jobName)+'.json',JSON.stringify(S,null,2),'application/json');
+};
+function applyImport(text){
+  try{
+    var o=JSON.parse(text);
+    if(o&&o.items){S=o;boot();save();closeModal();toast('読み込みました。');return true;}
+    toast('このアプリで保存した内容ではないようです。');
+  }catch(err){toast('読み込めませんでした。内容が途中で切れていないか確認してください。');}
+  return false;
+}
+function pickFile(){
+  var i=document.createElement('input');i.type='file';i.accept='.json,application/json,text/plain';
+  i.onchange=function(){
+    var f=i.files[0];if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){applyImport(rd.result);};
+    rd.readAsText(f);
+  };
+  i.click();
+}
+document.getElementById('btnImport').onclick=function(){
+  var d=showModal('保存した内容を読み込み',
+    '<p>以前「入力内容を保存」で書き出したファイルを選ぶか、コピーした文字列を下の枠に貼り付けてください。</p>'+
+    '<textarea id="mIn" placeholder="ここに貼り付け"></textarea>',
+    '<button class="btn" id="mFile">ファイルを選ぶ</button>'+
+    '<button class="btn primary" id="mLoad">読み込む</button>');
+  d.querySelector('#mFile').addEventListener('click',pickFile);
+  d.querySelector('#mLoad').addEventListener('click',function(){
+    var t=d.querySelector('#mIn').value.trim();
+    if(!t){toast('内容が空です。');return;}
+    applyImport(t);
+  });
+};
+
+function reid(){ S.items.forEach(function(it){it.id=nid();}); }
+function boot(){
+  reid();
+  document.getElementById('jobName').value=S.jobName||'';
+  document.getElementById('jobDate').value=S.jobDate||'';
+  document.getElementById('jobBy').value=S.jobBy||'';
+  renderInput();renderOutput();
+}
+boot();
+
+/* ================= 溶接ピッチ（旧「溶接ピッチ電卓」から移植・計算式はそのまま） ================= */
+function wFmt(n){return (Math.round(n*100)/100).toString();}
+function wMM(n){return Math.round(n).toString();}
+/* 円周割付だけ、必要なら0.01mmまで出す（機械加工向け） */
+function cMM(n){return DEC?(Math.round(n*100)/100).toFixed(2):Math.round(n).toString();}
+function weldCalc(L,w,p){
+  var remaining=L-w;
+  var rawCount=remaining/p;
+  var count=Math.ceil(rawCount-1e-9);
+  var actualPitch=remaining/count;
+  var welds=[];
+  for(var i=0;i<=count;i++){
+    var st=i*actualPitch;
+    welds.push({index:i+1,start:st,end:st+w});
+  }
+  return {remaining:remaining,rawCount:rawCount,count:count,actualPitch:actualPitch,welds:welds};
+}
+function weldOffsetSide(actualPitch,w,L,offset){
+  var welds=[],i=0;
+  while(true){
+    var st=offset+i*actualPitch,en=st+w;
+    if(en>L+1e-6)break;
+    welds.push({index:i+1,start:st,end:en});
+    i++;
+  }
+  return welds;
+}
+function wMsg(cls,glyph,text){
+  return '<div class="w-msg '+cls+'"><span class="g">'+glyph+'</span><span>'+text+'</span></div>';
+}
+function wRuler(L,welds){
+  var sw=Math.max(L/300,1);
+  var rects=welds.map(function(wd){
+    return '<rect x="'+wd.start+'" y="10" width="'+(wd.end-wd.start)+'" height="36" fill="var(--accent)" stroke="var(--accent)" stroke-width="'+sw+'" stroke-linejoin="round"></rect>';
+  }).join('');
+  return '<svg class="w-bar" viewBox="0 0 '+L+' 56" preserveAspectRatio="none" role="img" aria-label="溶接位置の配置図">'+
+    '<rect x="0" y="10" width="'+L+'" height="36" fill="var(--surface2)" stroke="var(--lineS)" stroke-width="'+sw+'"></rect>'+rects+'</svg>';
+}
+function wRuler2(L,A,B){
+  var sw=Math.max(L/300,1);
+  function rects(welds,y,color){
+    return welds.map(function(wd){
+      return '<rect x="'+wd.start+'" y="'+y+'" width="'+(wd.end-wd.start)+'" height="20" fill="'+color+'" stroke="'+color+'" stroke-width="'+sw+'" stroke-linejoin="round"></rect>';
+    }).join('');
+  }
+  return '<svg class="w-bar" viewBox="0 0 '+L+' 60" preserveAspectRatio="none" role="img" aria-label="千鳥溶接の配置図">'+
+    '<rect x="0" y="6" width="'+L+'" height="20" fill="var(--surface2)" stroke="var(--lineS)" stroke-width="'+sw+'"></rect>'+rects(A,6,'var(--accent)')+
+    '<rect x="0" y="34" width="'+L+'" height="20" fill="var(--surface2)" stroke="var(--lineS)" stroke-width="'+sw+'"></rect>'+rects(B,34,'var(--amber)')+'</svg>';
+}
+function wMarkCard(title,side,welds,compact){
+  var rows=welds.map(function(wd){
+    return '<div class="w-row"><span class="w-idx">No.'+wd.index+'</span>'+
+      '<span class="w-cell">'+wMM(wd.start)+'<span class="u">mm</span></span>'+
+      '<span class="w-cell">'+wMM(wd.end)+'<span class="u">mm</span></span></div>';
+  }).join('');
+  return '<div class="w-mark'+(side?' b':'')+'">'+
+    '<div class="w-mhead"><span class="w-mtitle">'+title+'</span><span class="w-mcount">全'+welds.length+'本</span></div>'+
+    '<div class="w-cols"><span>番号</span><span>開始</span><span>終了</span></div>'+
+    '<div class="w-list'+(compact?' compact':'')+'">'+rows+'</div></div>';
+}
+function wRead(a,b,c){
+  var L=document.getElementById(a).value.trim(),
+      w=document.getElementById(b).value.trim(),
+      p=document.getElementById(c).value.trim();
+  if(L===''||w===''||p==='')return {msg:wMsg('prompt','→','母材長さ・溶接ピッチを入力してください')};
+  var Ln=parseFloat(L),wn=parseFloat(w),pn=parseFloat(p);
+  if(!isFinite(Ln)||!isFinite(wn)||!isFinite(pn))return {msg:wMsg('prompt','→','数値を入力してください')};
+  if(Ln<=0||wn<=0||pn<=0)return {msg:wMsg('error','✕','すべて0より大きい値を入力してください')};
+  if(wn>=Ln)return {msg:wMsg('error','✕','溶接長は母材長さより短くしてください')};
+  return {L:Ln,w:wn,p:pn};
+}
+/* ピッチは溶接の始点どうしの間隔。溶接長のほうが長いと溶接部が重なってしまう */
+function wOverlap(pitch,w){
+  if(w>pitch+1e-9)
+    return wMsg('error','！','溶接長 '+wMM(w)+'mm が実際のピッチ '+wMM(pitch)+
+      'mm より長いので、隣の溶接と '+wMM(w-pitch)+'mm 重なります。溶接長かピッチを見直してください。');
+  if(Math.abs(w-pitch)<1e-9)
+    return wMsg('prompt','！','溶接長とピッチが同じなので、すき間のない連続溶接になります。');
+  return '';
+}
+function wSteps(r,L,w,p,half){
+  var h=wFmt(L)+' − '+wFmt(w)+' <span class="eq">=</span> '+wFmt(r.remaining)+'<br>'+
+    wFmt(r.remaining)+' ÷ '+wFmt(p)+' <span class="eq">=</span> '+wFmt(r.rawCount)+' <span class="eq">→ 切り上げ</span> <span class="res">'+r.count+'回</span><br>'+
+    wFmt(r.remaining)+' ÷ '+r.count+' <span class="eq">=</span> <span class="res">'+wMM(r.actualPitch)+'mm</span>';
+  if(half!=null)h+='<br>'+wFmt(r.actualPitch)+' ÷ 2 <span class="eq">=</span> <span class="res">'+wMM(half)+'mm（B面のずらし量）</span>';
+  return '<div class="w-steps">'+h+'</div>';
+}
+function wDetails(inner){
+  return '<details class="w-more"><summary><span class="chev">▸</span>配置図・計算式を表示</summary><div class="w-mbody">'+inner+'</div></details>';
+}
+
+function renderPitch(){
+  var out=document.getElementById('p-out');
+  var v=wRead('p-len','p-weld','p-pitch');
+  if(v.msg){out.innerHTML=v.msg;return;}
+  var r=weldCalc(v.L,v.w,v.p);
+  if(r.count>600){out.innerHTML=wMsg('error','✕','分割数が多すぎます（'+r.count+'回）。値を見直してください。');return;}
+  var diff=r.actualPitch-v.p, sign=diff>=0?'+':'';
+  out.innerHTML=
+    wOverlap(r.actualPitch,v.w)+
+    '<div class="w-stats">'+
+      '<div class="w-stat hero"><span class="w-lab">実際のピッチ</span><span class="w-val">'+wMM(r.actualPitch)+'<span class="u">mm</span></span><span class="w-sub">基準'+v.p+'mmから '+sign+wMM(diff)+'mm</span></div>'+
+      '<div class="w-stat"><span class="w-lab">溶接本数</span><span class="w-val">'+r.welds.length+'<span class="u">本</span></span><span class="w-sub">間隔'+r.count+'箇所</span></div>'+
+      '<div class="w-stat"><span class="w-lab">溶接長</span><span class="w-val">'+wMM(v.w)+'<span class="u">mm</span></span><span class="w-sub">母材'+wMM(v.L)+'mm</span></div>'+
+    '</div>'+
+    wMarkCard('マーキング位置',false,r.welds,false)+
+    wDetails(
+      '<div class="card w-ruler"><h3 class="sect-title" style="margin:0 0 8px">配置図</h3>'+wRuler(v.L,r.welds)+
+      '<div class="w-dim"><span class="ext l"></span><span class="ext r"></span><span class="ar"></span><span class="dl">'+wMM(v.L)+'mm</span></div>'+
+      '<div class="w-legend"><span><i class="w-sw a"></i>溶接部</span><span><i class="w-sw base"></i>母材</span></div></div>'+
+      wSteps(r,v.L,v.w,v.p,null));
+}
+function renderStagger(){
+  var out=document.getElementById('s-out');
+  var v=wRead('s-len','s-weld','s-pitch');
+  if(v.msg){out.innerHTML=v.msg;return;}
+  var r=weldCalc(v.L,v.w,v.p);
+  if(r.count>600){out.innerHTML=wMsg('error','✕','分割数が多すぎます（'+r.count+'回）。値を見直してください。');return;}
+  var half=r.actualPitch/2;
+  var B=weldOffsetSide(r.actualPitch,v.w,v.L,half);
+  var diff=r.actualPitch-v.p, sign=diff>=0?'+':'';
+  out.innerHTML=
+    wOverlap(r.actualPitch,v.w)+
+    '<div class="w-stats">'+
+      '<div class="w-stat hero"><span class="w-lab">実際のピッチ</span><span class="w-val">'+wMM(r.actualPitch)+'<span class="u">mm</span></span><span class="w-sub">基準'+v.p+'mmから '+sign+wMM(diff)+'mm</span></div>'+
+      '<div class="w-stat"><span class="w-lab">半ピッチ（ずらし量）</span><span class="w-val">'+wMM(half)+'<span class="u">mm</span></span><span class="w-sub">B面の開始位置</span></div>'+
+      '<div class="w-stat"><span class="w-lab">溶接本数</span><span class="w-val">'+r.welds.length+'<span class="u">/'+B.length+'本</span></span><span class="w-sub">A面 / B面</span></div>'+
+    '</div>'+
+    wMarkCard('マーキング位置 — A面（表）',false,r.welds,true)+
+    wMarkCard('マーキング位置 — B面（裏）',true,B,true)+
+    wDetails(
+      '<div class="card w-ruler"><h3 class="sect-title" style="margin:0 0 8px">配置図（上：A面／下：B面）</h3>'+wRuler2(v.L,r.welds,B)+
+      '<div class="w-dim"><span class="ext l"></span><span class="ext r"></span><span class="ar"></span><span class="dl">'+wMM(v.L)+'mm</span></div>'+
+      '<div class="w-legend"><span><i class="w-sw a"></i>A面</span><span><i class="w-sw bb"></i>B面</span><span><i class="w-sw base"></i>母材</span></div></div>'+
+      wSteps(r,v.L,v.w,v.p,half));
+}
+['p-len','p-weld','p-pitch'].forEach(function(id){document.getElementById(id).addEventListener('input',renderPitch);});
+['s-len','s-weld','s-pitch'].forEach(function(id){document.getElementById(id).addEventListener('input',renderStagger);});
+
+/* ================= 円周割付（角度 → 弦・円弧） ================= */
+var C_DIM='dia',C_HALF=true,C_CX=180,C_CY=180,C_RR=125,C_UNDO=[];
+var C_MODE='gap';                                 /* gap=前の穴からの間隔 / abs=0°からの角度 */
+var C_DIR=1;                                      /* 1=時計回り / -1=反時計回り（間隔入力のとき） */
+var C_ANGS=['275','34','34','34','34','34'];      /* 穴①②③… の入力値（文字のまま持つ） */
+
+function cRadius(){
+  var v=parseFloat(document.getElementById('c-size').value);
+  if(!isFinite(v)||v<=0)return null;
+  return C_DIM==='dia'?v/2:v;
+}
+function cNorm(a){return ((a%360)+360)%360;}
+/* 並び順のキー。半円は270°→0°→90°の順、全円は0°から時計回り */
+function cKey(a){var k=C_HALF?a-270:a;return ((k%360)+360)%360;}
+/* 並べ替え・差し込みの順番。反時計回りで入れているときは逆順にする */
+function cOrd(a){return (C_MODE==='gap'&&C_DIR===-1)?-cKey(a):cKey(a);}
+/* 各行の値を、0°から測った角度に直す（未入力の行は null） */
+function cAbsRows(){
+  var out=[],prev=null;
+  C_ANGS.forEach(function(v){
+    var n=parseFloat(v);
+    if(!isFinite(n)){out.push(null);return;}
+    var a;
+    if(C_MODE==='abs')a=cNorm(n);
+    else a=(prev==null)?cNorm(n):cNorm(prev+C_DIR*n);   /* 間隔は前の穴から、選んだ向きに足す */
+    prev=a;out.push(a);
+  });
+  return out;
+}
+/* 入力済みの穴だけを、番号つきで取り出す */
+function cHoles(){
+  var r=[];
+  cAbsRows().forEach(function(a,i){ if(a!=null)r.push({no:i+1,a:a}); });
+  return r;
+}
+/* 0°から測った角度の並びを、いまの入れ方に合わせて行の値に戻す */
+function cSetAbs(list){
+  var rd=function(x){return String(Math.round(x*100)/100);};
+  if(C_MODE==='abs'){C_ANGS=list.map(function(a){return rd(cNorm(a));});return;}
+  C_ANGS=list.map(function(a,i){
+    if(i===0)return rd(cNorm(a));
+    var d=(((a-list[i-1])*C_DIR)%360+360)%360;
+    if(d>180)d-=360;                              /* 選んだ向きと逆ならマイナスで表す */
+    return rd(d);
+  });
+}
+/* 区間の組。全円で3個以上なら最後→最初も1区間として閉じる */
+function cPairs(hs){
+  var r=[],i;
+  for(i=1;i<hs.length;i++)r.push([hs[i-1],hs[i]]);
+  if(!C_HALF&&hs.length>2)r.push([hs[hs.length-1],hs[0]]);
+  return r;
+}
+/* 2点の中心角。360°をまたいでも短いほうの角度で見る */
+function cGap(a,b){var d=((b-a)%360+360)%360;return d>180?360-d:d;}
+function cChord(R,deg){return 2*R*Math.sin(deg*Math.PI/360);}
+function cArc(R,deg){return R*deg*Math.PI/180;}
+function cAng(a){return (Math.round(a*100)/100)+'°';}
+/* 半円表示のとき、上半分（270°〜0°〜90°）から外れているか */
+function cOut(a){return C_HALF&&a>90&&a<270;}
+function cPos(a,rr){
+  var t=a*Math.PI/180;
+  return {x:C_CX+(rr||C_RR)*Math.sin(t),y:C_CY-(rr||C_RR)*Math.cos(t)};
+}
+function cUndoPush(){C_UNDO.push(C_ANGS.slice());if(C_UNDO.length>30)C_UNDO.shift();}
+function cSort(){
+  var v=cAbsRows().filter(function(a){return a!=null;});
+  v.sort(function(a,b){return cOrd(a)-cOrd(b);});
+  cSetAbs(v);
+}
+/* 円周上の並びに合わせて、既存の穴の間に差し込む（他の穴の位置は変えない） */
+function cInsert(deg){
+  var abs=cAbsRows().filter(function(a){return a!=null;});
+  var at=abs.length,k=cOrd(deg);
+  for(var i=0;i<abs.length;i++){ if(cOrd(abs[i])>k){at=i;break;} }
+  abs.splice(at,0,cNorm(deg));
+  cSetAbs(abs);
+}
+function cDelete(no){
+  var abs=[],i=0;
+  cAbsRows().forEach(function(a,j){ if(a!=null&&j!==no-1)abs.push(a); });
+  cSetAbs(abs);
+}
+/* 各行の「前の穴から」の弦長 */
+function cRowGaps(){
+  var hs=cHoles(),pr=cPairs(hs),R=cRadius(),map={};
+  pr.forEach(function(p){map[p[1].no]=R==null?null:cChord(R,cGap(p[0].a,p[1].a));});
+  return map;
+}
+
+/* ---- 穴①②③… の入力欄 ---- */
+/* 行の右に出す説明。間隔入力のときは「その穴が何度になるか」も出す */
+function cRowInfo(i){
+  if(cDup(i))return '同じ位置に重なっています';
+  var abs=cAbsRows()[i];
+  if(abs==null)return '';
+  if(cOut(abs))return '半円の外です（'+cAng(abs)+'）';
+  var g=cRowGaps()[i+1];
+  if(C_MODE!=='gap')return g==null?'':'前の穴から '+cMM(g)+' mm';
+  return '位置 '+cAng(abs)+(g==null?'':' ／ '+cMM(g)+'mm');
+}
+function cRenderRows(){
+  var box=document.getElementById('c-rows'),h='';
+  document.getElementById('c-rowlab').textContent=
+    (C_MODE==='gap'?'穴の間隔（穴①は開始角度）':'穴の角度（0°から測った角度）');
+  document.getElementById('c-hint').textContent=
+    (C_MODE==='gap'?'穴①に開始角度、穴②以降は「前の穴から何度」を入れます。図面の 34・34・34 をそのまま並べてOK。'
+                   :'0°から時計回りに測った角度をそのまま入れます。');
+  document.getElementById('c-dirseg').hidden=(C_MODE!=='gap');
+  document.getElementById('c-modenote').innerHTML=
+    (C_MODE==='gap'
+      ? '図面が <b>34°・34°</b> と穴から穴へ寸法が続いているとき（等配・ピッチ指示）はこちら。1つ直すと、それ以降の穴もまとめてずれます。'
+      : '図面が <b>0°から17°・51°</b> のように1穴ずつ角度で書いてあるとき（位置がバラバラなとき）はこちら。1つ直してもその穴だけ動きます。');
+  C_ANGS.forEach(function(v,i){
+    var n=parseFloat(v),dup=cDup(i),out=cOut(cAbsRows()[i]);
+    h+='<div class="c-row'+(dup?' dup':(out?' out':''))+'">'+
+       '<span class="c-no'+(isFinite(n)?'':' off')+'">'+(i+1)+'</span>'+
+       '<div class="w-wrap sm"><input type="number" inputmode="decimal" step="any" data-ci="'+i+'" value="'+esc(v)+'" placeholder="'+
+       (C_MODE==='gap'?(i===0?'開始角度':'間隔'):'角度')+'"><span class="w-unit">°</span></div>'+
+       '<span class="c-gap" data-cg="'+i+'">'+cRowInfo(i)+'</span>'+
+       '<button class="rowdel" data-cdel="'+i+'" title="この穴を削除">×</button>'+
+       '</div>';
+  });
+  if(!C_ANGS.length)h='<p class="hint" style="margin:2px 0 6px">穴がありません。上の図をタップするか「＋ 穴を追加」で足してください。</p>';
+  box.innerHTML=h;
+}
+function cDup(i){
+  var abs=cAbsRows(),a=abs[i],d=false;
+  if(a==null)return false;
+  abs.forEach(function(b,j){ if(j!==i&&b!=null&&cGap(a,b)<0.5)d=true; });
+  return d;
+}
+function cUpdateGaps(){
+  Array.prototype.forEach.call(document.querySelectorAll('#c-rows .c-gap'),function(el){
+    el.textContent=cRowInfo(+el.getAttribute('data-cg'));
+  });
+  var absAll=cAbsRows();
+  Array.prototype.forEach.call(document.querySelectorAll('#c-rows .c-row'),function(el,i){
+    el.classList.toggle('dup',cDup(i));
+    el.classList.toggle('out',!cDup(i)&&cOut(absAll[i]));
+    var b=el.querySelector('.c-no');
+    if(b)b.classList.toggle('off',!isFinite(parseFloat(C_ANGS[i])));
+  });
+}
+/* 入力欄を作り直さずに、図と結果だけ更新（入力中にカーソルが飛ばないように） */
+function cLive(){cUpdateGaps();cPadRender();renderCircle();}
+function cRebuild(){cRenderRows();cPadRender();renderCircle();}
+
+document.getElementById('c-rows').addEventListener('input',function(e){
+  var el=e.target;
+  if(el.tagName!=='INPUT')return;
+  C_ANGS[+el.getAttribute('data-ci')]=el.value;
+  cLive();
+});
+/* 入力の確定では並べ替えない（入力欄を作り直すと打ち込み先がずれるため）。
+   並べ替えは「角度順に並べる」ボタンだけで行う */
+document.getElementById('c-rows').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('[data-cdel]'):null;
+  if(!b)return;
+  cUndoPush();
+  cDelete((+b.getAttribute('data-cdel'))+1);
+  cRebuild();
+});
+document.getElementById('c-add').addEventListener('click',function(){
+  var hs=cHoles(),v='';
+  if(!hs.length){                         /* 1つ目は端から始めることが多い */
+    v=C_HALF?(C_DIR===1?'270':'90'):'0';
+  }else if(C_MODE==='gap'){               /* 直前と同じ間隔を提案（等ピッチ） */
+    for(var i=C_ANGS.length-1;i>=1;i--){
+      var d=parseFloat(C_ANGS[i]);
+      if(isFinite(d)){v=String(d);break;}
+    }
+  }else if(hs.length>=2){
+    var next=cNorm(hs[hs.length-1].a+cGap(hs[hs.length-2].a,hs[hs.length-1].a));
+    if(!(C_HALF&&next>90&&next<270))v=String(Math.round(next*100)/100);
+  }
+  cUndoPush();
+  C_ANGS.push(v);
+  cRebuild();
+  var ins=document.querySelectorAll('#c-rows input');
+  if(ins.length){ins[ins.length-1].focus();ins[ins.length-1].select();}
+});
+document.getElementById('c-sort').addEventListener('click',function(){
+  cUndoPush();cSort();cRebuild();
+});
+Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cdir]'),function(b){
+  b.addEventListener('click',function(){
+    var abs=cAbsRows().filter(function(a){return a!=null;});
+    C_DIR=(b.getAttribute('data-cdir')==='ccw')?-1:1;
+    cSetAbs(abs);                          /* 穴の位置は変えずに、間隔の向きだけ入れ替える */
+    Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cdir]'),function(x){
+      x.setAttribute('aria-selected',x===b?'true':'false');
+    });
+    try{localStorage.setItem('kantool.cdir',C_DIR===1?'cw':'ccw');}catch(e){}
+    cRebuild();
+  });
+});
+Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cmode]'),function(b){
+  b.addEventListener('click',function(){
+    var abs=cAbsRows().filter(function(a){return a!=null;});
+    C_MODE=b.getAttribute('data-cmode');
+    cSetAbs(abs);                          /* 穴の位置は変えずに、入力値だけ入れ替える */
+    Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cmode]'),function(x){
+      x.setAttribute('aria-selected',x===b?'true':'false');
+    });
+    try{localStorage.setItem('kantool.cmode',C_MODE);}catch(e){}
+    cRebuild();
+  });
+});
+
+/* ---- タップで穴を置く図 ---- */
+function cPadRender(){
+  var pad=document.getElementById('c-pad');
+  var hs=cHoles(),R=cRadius(),CX=C_CX,CY=C_CY,RR=C_RR;
+  var anyOut=hs.some(function(h){return cOut(h.a);});
+  var vb=(C_HALF&&!anyOut)?'0 24 360 184':'0 0 360 360';
+  var s='<svg id="c-pad-svg" viewBox="'+vb+'" role="img" aria-label="穴の位置を置く図">';
+  if(C_HALF){
+    var d='M'+(CX-RR)+' '+CY+' A'+RR+' '+RR+' 0 0 1 '+(CX+RR)+' '+CY;
+    if(anyOut)   /* 半円の外に穴があるときは、下半分も薄く出して位置が分かるようにする */
+      s+='<path d="M'+(CX+RR)+' '+CY+' A'+RR+' '+RR+' 0 0 1 '+(CX-RR)+' '+CY+'" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="5 5"/>';
+    s+='<line x1="'+(CX-RR)+'" y1="'+CY+'" x2="'+(CX+RR)+'" y2="'+CY+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="5 4"/>'+
+       '<path class="hit" d="'+d+'" fill="none" stroke="var(--surface)" stroke-width="26" stroke-linecap="round"/>'+
+       '<path d="'+d+'" fill="none" stroke="var(--lineS)" stroke-width="1.6"/>';
+  }else{
+    s+='<circle class="hit" cx="'+CX+'" cy="'+CY+'" r="'+RR+'" fill="none" stroke="var(--surface)" stroke-width="26"/>'+
+       '<circle cx="'+CX+'" cy="'+CY+'" r="'+RR+'" fill="none" stroke="var(--lineS)" stroke-width="1.6"/>';
+  }
+  s+='<line x1="'+CX+'" y1="'+CY+'" x2="'+CX+'" y2="'+(CY-RR-8)+'" stroke="var(--lineS)" stroke-width="1" stroke-dasharray="6 4"/>'+
+     '<circle cx="'+CX+'" cy="'+CY+'" r="2.5" fill="var(--ink3)"/>';
+  /* 目印の角度。同じ位置に穴があるときは穴側のラベルに任せる */
+  function far(a){return hs.every(function(x){return cGap(x.a,a)>7;});}
+  if(far(0))s+='<text class="lab dim" x="'+CX+'" y="'+(CY-RR-16)+'" text-anchor="middle">0°</text>';
+  if(C_HALF){
+    if(far(270))s+='<text class="lab dim" x="'+(CX-RR)+'" y="'+(CY+18)+'" text-anchor="middle">270°</text>';
+    if(far(90))s+='<text class="lab dim" x="'+(CX+RR)+'" y="'+(CY+18)+'" text-anchor="middle">90°</text>';
+  }
+  if(R!=null){
+    cPairs(hs).forEach(function(pr){
+      var p1=cPos(pr[0].a),p2=cPos(pr[1].a);
+      s+='<line x1="'+p1.x.toFixed(1)+'" y1="'+p1.y.toFixed(1)+'" x2="'+p2.x.toFixed(1)+'" y2="'+p2.y.toFixed(1)+
+         '" stroke="var(--accent)" stroke-width="1.6"/>';
+      if(hs.length<=10&&cGap(pr[0].a,pr[1].a)>=9){
+        var mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2,k=0.74;
+        s+='<text class="len" x="'+(CX+(mx-CX)*k).toFixed(1)+'" y="'+(CY+(my-CY)*k+4).toFixed(1)+
+           '" text-anchor="middle">'+cMM(cChord(R,cGap(pr[0].a,pr[1].a)))+'</text>';
+      }
+    });
+  }
+  hs.forEach(function(hl){
+    var p=cPos(hl.a),col=cOut(hl.a)?'var(--red)':'var(--accent)';
+    s+='<g class="hole" data-hole="'+hl.no+'"><circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+
+       '" r="13" fill="transparent"/><circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+
+       '" r="9.5" fill="'+col+'" stroke="var(--surface)" stroke-width="1.5"/>'+
+       '<text class="no" x="'+p.x.toFixed(1)+'" y="'+(p.y+3.6).toFixed(1)+'" text-anchor="middle">'+hl.no+'</text></g>';
+  });
+  if(hs.length<=18){
+    var shown=[];
+    hs.forEach(function(hl){
+      if(shown.some(function(x){return cGap(x,hl.a)<9;}))return;   /* 近すぎるラベルは重なるので省く */
+      shown.push(hl.a);
+      var p=cPos(hl.a,RR+24);
+      s+='<text class="lab" x="'+p.x.toFixed(1)+'" y="'+(p.y+4).toFixed(1)+'" text-anchor="middle">'+cAng(hl.a)+'</text>';
+    });
+  }
+  if(!hs.length){
+    s+='<text class="ghost" x="'+CX+'" y="'+(CY-30)+'" text-anchor="middle">円の線をタップして</text>'+
+       '<text class="ghost" x="'+CX+'" y="'+(CY-10)+'" text-anchor="middle">穴の位置を置いてください</text>';
+  }
+  pad.innerHTML=s+'</svg>';
+}
+document.getElementById('c-pad').addEventListener('click',function(e){
+  var svg=document.getElementById('c-pad-svg');if(!svg)return;
+  var g=e.target.closest?e.target.closest('[data-hole]'):null;
+  if(g){
+    var no=+g.getAttribute('data-hole');
+    cUndoPush();
+    cDelete(no);
+    cRebuild();
+    toast('穴'+no+'を削除しました。戻すときは「ひとつ戻す」。');
+    return;
+  }
+  if(!(e.target.closest&&e.target.closest('.hit')))return;
+  var pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+  var m=svg.getScreenCTM();if(!m)return;
+  var loc=pt.matrixTransform(m.inverse());
+  var deg=Math.atan2(loc.x-C_CX,C_CY-loc.y)*180/Math.PI;
+  deg=((Math.round(deg)%360)+360)%360;
+  if(C_HALF&&deg>90&&deg<270){
+    if(deg<=98)deg=90; else if(deg>=262)deg=270; else return;   /* 端のすぐ外は端に寄せる */
+  }
+  if(cHoles().some(function(x){return cGap(x.a,deg)<0.5;})){toast('その角度にはもう穴があります。');return;}
+  cUndoPush();
+  cInsert(deg);
+  cRebuild();
+});
+document.getElementById('c-undo').addEventListener('click',function(){
+  if(!C_UNDO.length){toast('戻せる操作がありません。');return;}
+  C_ANGS=C_UNDO.pop();
+  cRebuild();
+});
+document.getElementById('c-clear').addEventListener('click',function(){
+  cUndoPush();C_ANGS=[];cRebuild();
+});
+Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cshape]'),function(b){
+  b.addEventListener('click',function(){
+    C_HALF=(b.getAttribute('data-cshape')==='half');
+    Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cshape]'),function(x){
+      x.setAttribute('aria-selected',x===b?'true':'false');
+    });
+    try{localStorage.setItem('kantool.cshape',C_HALF?'half':'full');}catch(e){}
+    cRebuild();
+  });
+});
+Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cdim]'),function(b){
+  b.addEventListener('click',function(){
+    C_DIM=b.getAttribute('data-cdim');
+    Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cdim]'),function(x){
+      x.setAttribute('aria-selected',x===b?'true':'false');
+    });
+    try{localStorage.setItem('kantool.cdim',C_DIM);}catch(e){}
+    cLive();
+  });
+});
+document.getElementById('c-size').addEventListener('input',cLive);
+
+/* ---- 配置図（印刷・画像用） ---- */
+function cDiagram(R,hs){
+  var CX=175,CY=175,RR=118;
+  var pts={};
+  hs.forEach(function(hl){
+    var t=hl.a*Math.PI/180;
+    pts[hl.no]={x:CX+RR*Math.sin(t),y:CY-RR*Math.cos(t)};
+  });
+  var anyOut=hs.some(function(h){return cOut(h.a);});
+  var s='<svg class="c-svg" viewBox="'+((C_HALF&&!anyOut)?'0 22 350 180':'0 0 350 350')+'" role="img" aria-label="穴位置の配置図">';
+  if(C_HALF){
+    if(anyOut)
+      s+='<path d="M'+(CX+RR)+' '+CY+' A'+RR+' '+RR+' 0 0 1 '+(CX-RR)+' '+CY+'" fill="none" stroke="var(--line)" stroke-width="1.1" stroke-dasharray="5 5"/>';
+    s+='<line x1="'+(CX-RR)+'" y1="'+CY+'" x2="'+(CX+RR)+'" y2="'+CY+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="5 4"/>'+
+       '<path d="M'+(CX-RR)+' '+CY+' A'+RR+' '+RR+' 0 0 1 '+(CX+RR)+' '+CY+'" fill="none" stroke="var(--lineS)" stroke-width="1.4"/>';
+  }else{
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="'+RR+'" fill="none" stroke="var(--lineS)" stroke-width="1.4"/>';
+  }
+  s+='<circle cx="'+CX+'" cy="'+CY+'" r="2.5" fill="var(--ink3)"/>'+
+     '<line x1="'+CX+'" y1="'+CY+'" x2="'+CX+'" y2="'+(CY-RR-14)+'" stroke="var(--lineS)" stroke-width="1" stroke-dasharray="6 4"/>';
+  cPairs(hs).forEach(function(pr){
+    var q1=pts[pr[0].no],q2=pts[pr[1].no];
+    s+='<line x1="'+q1.x.toFixed(1)+'" y1="'+q1.y.toFixed(1)+'" x2="'+q2.x.toFixed(1)+
+       '" y2="'+q2.y.toFixed(1)+'" stroke="var(--accent)" stroke-width="1.6"/>';
+    if(hs.length<=10&&cGap(pr[0].a,pr[1].a)>=9){
+      var mx=(q1.x+q2.x)/2,my=(q1.y+q2.y)/2,k=0.72;
+      s+='<text class="len" x="'+(CX+(mx-CX)*k).toFixed(1)+'" y="'+(CY+(my-CY)*k+4).toFixed(1)+
+         '" text-anchor="middle">'+cMM(cChord(R,cGap(pr[0].a,pr[1].a)))+'</text>';
+    }
+  });
+  hs.forEach(function(hl){
+    var p=pts[hl.no];
+    s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="8.5" fill="'+(cOut(hl.a)?'var(--red)':'var(--accent)')+'"/>'+
+       '<text class="no" x="'+p.x.toFixed(1)+'" y="'+(p.y+3.4).toFixed(1)+'" text-anchor="middle">'+hl.no+'</text>';
+  });
+  if(hs.length<=18){
+    var shown=[];
+    hs.forEach(function(hl){
+      if(shown.some(function(x){return cGap(x,hl.a)<9;}))return;
+      shown.push(hl.a);
+      var t=hl.a*Math.PI/180,lx=CX+(RR+22)*Math.sin(t),ly=CY-(RR+22)*Math.cos(t);
+      s+='<text class="lab" x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" text-anchor="middle">'+cAng(hl.a)+'</text>';
+    });
+  }
+  return s+'</svg>';
+}
+
+function renderCircle(){
+  var out=document.getElementById('c-out'),conv=document.getElementById('c-conv');
+  var R=cRadius();
+  conv.textContent=R==null?'図面の「φ1782」なら直径に 1782、「R891」なら半径に 891':
+    (C_DIM==='dia'?'半径 R'+wFmt(R):'直径 φ'+wFmt(R*2))+' mm ／ 全周 '+cMM(2*Math.PI*R)+' mm';
+  var hs=cHoles();
+  if(R==null||!hs.length){out.innerHTML=wMsg('prompt','→','円の寸法と穴の角度を入力してください');return;}
+  if(hs.length<2){out.innerHTML=wMsg('prompt','→','穴を2つ以上入れてください');return;}
+  if(hs.length>120){out.innerHTML=wMsg('error','✕','穴が多すぎます（'+hs.length+'個）。120個までにしてください。');return;}
+
+  var i,pairs=cPairs(hs),gaps=pairs.map(function(pr){return cGap(pr[0].a,pr[1].a);});
+  var same=gaps.every(function(g){return Math.abs(g-gaps[0])<1e-9;});
+  var zero=gaps.some(function(g){return g<1e-9;});
+
+  var h='<div class="w-stats">';
+  if(same&&!zero){
+    h+='<div class="w-stat hero"><span class="w-lab">隣り合う穴の直線距離</span><span class="w-val">'+
+       cMM(cChord(R,gaps[0]))+'<span class="u">mm</span></span><span class="w-sub">角度差 '+cAng(gaps[0])+' ／ 弧 '+cMM(cArc(R,gaps[0]))+'mm</span></div>';
+  }else{
+    h+='<div class="w-stat hero"><span class="w-lab">区間</span><span class="w-val">'+gaps.length+
+       '<span class="u">箇所</span></span><span class="w-sub">間隔がそれぞれ違います</span></div>';
+  }
+  h+='<div class="w-stat"><span class="w-lab">直径 / 半径</span><span class="w-val">'+cMM(R*2)+
+     '<span class="u">mm</span></span><span class="w-sub">R '+wFmt(R)+' mm</span></div>'+
+     '<div class="w-stat"><span class="w-lab">穴の数</span><span class="w-val">'+hs.length+
+     '<span class="u">個</span></span><span class="w-sub">全周 '+cMM(2*Math.PI*R)+' mm</span></div></div>';
+
+  if(zero)h+=wMsg('error','！','同じ角度の穴が重なっています（間隔が0°の区間があります）。');
+  var outN=hs.filter(function(x){return cOut(x.a);});
+  if(outN.length)h+=wMsg('error','！','穴'+outN.map(function(x){return x.no;}).join('・')+
+    ' が半円（270°〜0°〜90°）の外にあります。回り方を「'+(C_DIR===1?'反時計回り':'時計回り')+
+    '」に変えるか、「全円」に切り替えてください。');
+
+  h+='<h3 class="sect-title">隣り合う穴の距離</h3><div class="tbl-wrap"><table class="out"><thead><tr>'+
+     '<th class="idx">#</th><th>区間</th><th class="n">角度差</th><th class="n">直線距離（弦）</th><th class="n">円弧に沿った長さ</th>'+
+     '</tr></thead><tbody>';
+  gaps.forEach(function(g,j){
+    h+='<tr><td class="idx">'+(j+1)+'</td>'+
+      '<td class="mono nw">穴'+pairs[j][0].no+'&nbsp;→&nbsp;穴'+pairs[j][1].no+
+      ' <span class="sub">'+cAng(pairs[j][0].a)+'→'+cAng(pairs[j][1].a)+'</span></td>'+
+      '<td class="n">'+cAng(g)+'</td>'+
+      '<td class="n hl">'+cMM(cChord(R,g))+'</td>'+
+      '<td class="n">'+cMM(cArc(R,g))+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+
+  if(hs.length>2){
+    h+='<h3 class="sect-title">穴'+hs[0].no+'（'+cAng(hs[0].a)+'）からの距離</h3><div class="tbl-wrap"><table class="out"><thead><tr>'+
+       '<th class="idx">#</th><th>穴</th><th class="n">基準からの角度</th><th class="n">直線距離（弦）</th><th class="n">円弧に沿った長さ</th>'+
+       '</tr></thead><tbody>';
+    for(i=1;i<hs.length;i++){
+      var d=cGap(hs[0].a,hs[i].a);
+      h+='<tr><td class="idx">'+i+'</td>'+
+        '<td class="mono nw">穴'+hs[i].no+' <span class="sub">'+cAng(hs[i].a)+'</span></td>'+
+        '<td class="n">'+cAng(d)+'</td>'+
+        '<td class="n hl">'+cMM(cChord(R,d))+'</td>'+
+        '<td class="n">'+cMM(cArc(R,d))+'</td></tr>';
+    }
+    h+='</tbody></table></div><p class="hint">※ 基準からの角度は、180°を超える場合は反対回りの短いほうで計算しています。</p>';
+  }
+
+  var g0=gaps[0];
+  h+=wDetails(
+    '<div class="card w-ruler"><h3 class="sect-title" style="margin:0 0 8px">配置図（0°を真上、時計回り）</h3>'+
+    cDiagram(R,hs)+
+    '<div class="w-legend"><span><i class="w-sw a"></i>穴の番号と弦</span><span>青い数字は弦の長さ mm</span></div></div>'+
+    '<div class="w-steps">'+
+      '弦（直線距離） <span class="eq">=</span> 直径 × sin(角度 ÷ 2)<br>'+
+      wFmt(R*2)+' × sin('+cAng(g0).replace('°','')+' ÷ 2) <span class="eq">=</span> <span class="res">'+cMM(cChord(R,g0))+'mm</span><br>'+
+      '円弧長 <span class="eq">=</span> 半径 × 角度 × π ÷ 180<br>'+
+      wFmt(R)+' × '+cAng(g0).replace('°','')+' × π ÷ 180 <span class="eq">=</span> <span class="res">'+cMM(cArc(R,g0))+'mm</span>'+
+    '</div>');
+  out.innerHTML=h;
+}
+
+
+/* ================= 三角計算（辺と角から残りを出す） ================= */
+var T_RIGHT=true;                                  /* 直角三角形モード（C=90°） */
+var D2R=Math.PI/180,R2D=180/Math.PI;
+var T_IN={a:'',b:'',c:'',A:'',B:'',C:''};   /* 自分で入れた値だけを持つ（自動で入った値は含めない） */
+var T_KEYS=['a','b','c','A','B','C'];
+var T_ORD=[];                                /* 入れた順。3つを超えたら古いものから外す */
+function tTouch(k){
+  var i=T_ORD.indexOf(k);
+  if(i>=0)T_ORD.splice(i,1);
+  if(String(T_IN[k]||'')!=='')T_ORD.push(k);
+  var free=T_RIGHT?2:3;                      /* 直角モードは C=90° が1つ分 */
+  var live=T_ORD.filter(function(x){return !(x==='C'&&T_RIGHT)&&String(T_IN[x]||'')!=='';});
+  while(live.length>free){
+    var old=live.shift();
+    T_IN[old]='';
+    var e=document.getElementById('t-'+old);
+    e.value='';
+    T_ORD.splice(T_ORD.indexOf(old),1);
+  }
+}
+function tNum(k){
+  var v=String(T_IN[k]==null?'':T_IN[k]).trim();
+  if(v==='')return null;
+  var n=parseFloat(v);
+  return isFinite(n)?n:null;
+}
+/* 空欄に計算結果を入れる。自分で入れた欄と、いま触っている欄はそのまま */
+function tFill(s){
+  T_KEYS.forEach(function(k){
+    var el=document.getElementById('t-'+k);
+    if(String(T_IN[k]||'')!==''){el.classList.remove('calc');return;}
+    if(document.activeElement===el)return;
+    el.value=(s&&s[k]!=null)?tFmt(s[k]):'';
+    el.classList.toggle('calc',!!(s&&s[k]!=null));
+  });
+}
+function tFmt(n){
+  if(n==null||!isFinite(n))return '—';
+  var r=Math.round(n*100)/100;
+  return (Math.abs(r)>=1000?r.toLocaleString('ja-JP',{maximumFractionDigits:2}):String(r));
+}
+/* 三角形を解く。v={a,b,c,A,B,C}（未入力は null）*/
+function triSolve(v){
+  var s={a:v.a,b:v.b,c:v.c,A:v.A,B:v.B,C:v.C},note=null;
+  var S=['a','b','c'],G=['A','B','C'];
+  function nS(){return S.filter(function(k){return s[k]!=null;});}
+  function nG(){return G.filter(function(k){return s[k]!=null;});}
+
+  var i;
+  for(i=0;i<3;i++){
+    if(s[S[i]]!=null&&s[S[i]]<=0)return {err:'辺の長さは0より大きい値を入れてください。'};
+    if(s[G[i]]!=null&&(s[G[i]]<=0||s[G[i]]>=180))return {err:'角度は0°より大きく180°より小さい値を入れてください。'};
+  }
+  /* 角が2つ分かれば3つ目 */
+  if(nG().length===2){
+    var miss=G.filter(function(k){return s[k]==null;})[0];
+    var sum=nG().reduce(function(t,k){return t+s[k];},0);
+    if(sum>=180-1e-9)return {err:'角度の合計が180°以上です。'};
+    s[miss]=180-sum;
+  }
+  if(nG().length===3&&Math.abs(s.A+s.B+s.C-180)>1e-6)return {err:'角度の合計が180°になっていません。'};
+
+  var ns=nS().length,ng=nG().length;
+  if(ns===0)return {need:'辺の長さを1つ以上入れてください。'};
+  if(ns+ng<3)return {need:'あと'+(3-ns-ng)+'つ入力してください（合計3つで形が決まります）。'};
+
+  if(ns===3){                                       /* 3辺 */
+    if(s.a+s.b<=s.c||s.b+s.c<=s.a||s.c+s.a<=s.b)
+      return {err:'この3辺では三角形になりません（2辺の和が残りの1辺以下です）。'};
+    ['A','B','C'].forEach(function(g,j){
+      var x=s[S[j]],y=s[S[(j+1)%3]],z=s[S[(j+2)%3]];
+      s[g]=Math.acos((y*y+z*z-x*x)/(2*y*z))*R2D;
+    });
+  }else if(ns===2){
+    var miss2=S.filter(function(k){return s[k]==null;})[0];
+    var oppG=G[S.indexOf(miss2)];
+    if(s[oppG]!=null){                              /* 2辺と挟む角 → 余弦定理 */
+      var p=S.filter(function(k){return k!==miss2;});
+      s[miss2]=Math.sqrt(s[p[0]]*s[p[0]]+s[p[1]]*s[p[1]]-2*s[p[0]]*s[p[1]]*Math.cos(s[oppG]*D2R));
+      ['A','B','C'].forEach(function(g,j){
+        if(s[g]!=null)return;
+        var x=s[S[j]],y=s[S[(j+1)%3]],z=s[S[(j+2)%3]];
+        s[g]=Math.acos((y*y+z*z-x*x)/(2*y*z))*R2D;
+      });
+    }else{                                          /* 2辺と、片方の向かいの角 → 正弦定理（2通りの解がありうる） */
+      var kn=null;
+      for(i=0;i<3;i++) if(s[S[i]]!=null&&s[G[i]]!=null){kn=i;break;}
+      if(kn==null)return {need:'辺の向かいの角が1つも分かりません。角度をもう1つ入れてください。'};
+      var P=s[G[kn]],pp=s[S[kn]];
+      var other=null;
+      for(i=0;i<3;i++) if(i!==kn&&s[S[i]]!=null){other=i;break;}
+      var q=s[S[other]],sinQ=q*Math.sin(P*D2R)/pp;
+      if(sinQ>1+1e-9)return {err:'この組み合わせでは三角形になりません（'+G[other]+'の正弦が1を超えます）。'};
+      var Q1=Math.asin(Math.min(1,sinQ))*R2D,Q2=180-Q1;
+      var use=Q1;                                   /* 鋭角のほうを採用 */
+      if(P<90-1e-9&&q>pp+1e-9&&P+Q2<180-1e-9&&Math.abs(Q1-Q2)>1e-6){
+        note='この入力は2通りの三角形になります（'+G[other]+' = '+tFmt(Q1)+'° と '+tFmt(Q2)+'°）。ここでは '+tFmt(Q1)+
+             '° のほうで計算しています。もう一方が必要なら '+G[other]+' に '+tFmt(Q2)+' を入れてください。';
+      }
+      s[G[other]]=use;
+      var last=[0,1,2].filter(function(x){return x!==kn&&x!==other;})[0];
+      s[G[last]]=180-s[G[kn]]-s[G[other]];
+      if(s[G[last]]<=0)return {err:'この組み合わせでは三角形になりません。'};
+      s[S[last]]=pp*Math.sin(s[G[last]]*D2R)/Math.sin(P*D2R);
+    }
+  }else{                                            /* 1辺と2角（3角そろっている） */
+    var k0=null;
+    for(i=0;i<3;i++) if(s[S[i]]!=null){k0=i;break;}
+    var kk=s[S[k0]]/Math.sin(s[G[k0]]*D2R);
+    for(i=0;i<3;i++) if(s[S[i]]==null)s[S[i]]=kk*Math.sin(s[G[i]]*D2R);
+  }
+
+  for(i=0;i<3;i++){
+    if(!isFinite(s[S[i]])||s[S[i]]<=0||!isFinite(s[G[i]])||s[G[i]]<=0)
+      return {err:'この組み合わせでは三角形になりません。数字を見直してください。'};
+  }
+  var area=0.5*s.a*s.b*Math.sin(s.C*D2R);
+  return {s:s,area:area,h:{a:2*area/s.a,b:2*area/s.b,c:2*area/s.c},note:note};
+}
+
+/* 計算結果の形を、そのまま描く */
+function triSVG(s,withNum){
+  var W=430,H=300,M=42;
+  var A={x:0,y:0},C={x:s.b,y:0},B={x:s.c*Math.cos(s.A*D2R),y:-s.c*Math.sin(s.A*D2R)};
+  var xs=[A.x,B.x,C.x],ys=[A.y,B.y,C.y];
+  var x0=Math.min.apply(null,xs),x1=Math.max.apply(null,xs);
+  var y0=Math.min.apply(null,ys),y1=Math.max.apply(null,ys);
+  var k=Math.min((W-2*M)/Math.max(x1-x0,1e-9),(H-2*M)/Math.max(y1-y0,1e-9));
+  var ox=(W-(x1-x0)*k)/2-x0*k, oy=(H-(y1-y0)*k)/2-y0*k;
+  function P(p){return {x:p.x*k+ox,y:p.y*k+oy};}
+  var pa=P(A),pb=P(B),pc=P(C),cx=(pa.x+pb.x+pc.x)/3,cy=(pa.y+pb.y+pc.y)/3;
+  function out(p,d){                                 /* 重心から外へ少しずらす */
+    var vx=p.x-cx,vy=p.y-cy,L=Math.sqrt(vx*vx+vy*vy)||1;
+    return {x:p.x+vx/L*d,y:p.y+vy/L*d};
+  }
+  var g='<svg class="t-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="三角形の図">'+
+    '<polygon points="'+[pa,pb,pc].map(function(p){return p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ')+
+    '" fill="var(--accentSoft)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>';
+  /* 角の印 */
+  [[pa,'A',s.A,pb,pc],[pb,'B',s.B,pc,pa],[pc,'C',s.C,pa,pb]].forEach(function(t){
+    var v=t[0],lab=t[1],deg=t[2],u1=t[3],u2=t[4];
+    function unit(p){var dx=p.x-v.x,dy=p.y-v.y,L=Math.sqrt(dx*dx+dy*dy)||1;return {x:dx/L,y:dy/L};}
+    var e1=unit(u1),e2=unit(u2),r=Math.abs(deg-90)<1e-6?13:17;
+    if(Math.abs(deg-90)<1e-6){                       /* 直角は四角 */
+      g+='<path d="M'+(v.x+e1.x*r).toFixed(1)+' '+(v.y+e1.y*r).toFixed(1)+
+         'L'+(v.x+(e1.x+e2.x)*r).toFixed(1)+' '+(v.y+(e1.y+e2.y)*r).toFixed(1)+
+         'L'+(v.x+e2.x*r).toFixed(1)+' '+(v.y+e2.y*r).toFixed(1)+
+         '" fill="none" stroke="var(--amber)" stroke-width="1.6"/>';
+    }else{
+      var big=deg>180?1:0;
+      var cross=e1.x*e2.y-e1.y*e2.x;
+      g+='<path d="M'+(v.x+e1.x*r).toFixed(1)+' '+(v.y+e1.y*r).toFixed(1)+
+         'A'+r+' '+r+' 0 '+big+' '+(cross>0?1:0)+' '+(v.x+e2.x*r).toFixed(1)+' '+(v.y+e2.y*r).toFixed(1)+
+         '" fill="none" stroke="var(--amber)" stroke-width="1.6"/>';
+    }
+    var off=Math.abs(deg-90)<1e-6?r+26:r+20;
+    var m={x:v.x+(e1.x+e2.x)/2*off,y:v.y+(e1.y+e2.y)/2*off};
+    if(withNum||Math.abs(deg-90)<1e-6)
+      g+='<text class="ang" x="'+m.x.toFixed(1)+'" y="'+(m.y+4).toFixed(1)+'" text-anchor="middle">'+
+         (withNum?tFmt(deg)+'°':'90°')+'</text>';
+    var lp=out(v,withNum?24:22);
+    g+='<text class="vtx" x="'+lp.x.toFixed(1)+'" y="'+(lp.y+5).toFixed(1)+'" text-anchor="middle">'+lab+'</text>';
+  });
+  /* 辺の長さ */
+  [[pb,pc,'a',s.a],[pa,pc,'b',s.b],[pa,pb,'c',s.c]].forEach(function(t){
+    var mid={x:(t[0].x+t[1].x)/2,y:(t[0].y+t[1].y)/2},p=out(mid,16);
+    g+='<text class="side" x="'+p.x.toFixed(1)+'" y="'+(p.y+4).toFixed(1)+'" text-anchor="middle">'+
+       (withNum?t[2]+' = '+tFmt(t[3]):t[2])+'</text>';
+  });
+  return g+'</svg>';
+}
+
+/* まだ計算できないときに出す見本の形。a・b・c と A・B・C の位置関係を示す */
+function triSample(){
+  return T_RIGHT?{a:40,b:69.282,c:80,A:30,B:60,C:90}
+                :{a:120,b:95,c:96.885,A:77.409,B:50.591,C:52};
+}
+function triFig(s,withNum){
+  document.getElementById('t-fig').innerHTML=triSVG(s,withNum);
+}
+function renderTri(){
+  var out=document.getElementById('t-out');
+  var given={a:tNum('a'),b:tNum('b'),c:tNum('c'),A:tNum('A'),B:tNum('B'),C:tNum('C')};
+  if(T_RIGHT)given.C=90;
+  var r=triSolve(given);
+  if(r.err){tFill(null);triFig(triSample(),false);out.innerHTML=wMsg('error','✕',r.err);return;}
+  if(r.need){tFill(null);triFig(triSample(),false);out.innerHTML=wMsg('prompt','→',r.need);return;}
+  var s=r.s;
+  tFill(s);
+  triFig(s,true);
+  var h='';
+  if(r.note)h+=wMsg('prompt','！',r.note);
+  h+='<div class="w-stats four">'+
+    '<div class="w-stat hero"><span class="w-lab">面積</span><span class="w-val">'+tFmt(r.area)+'<span class="u">mm²</span></span><span class="w-sub">'+tFmt(r.area/100)+' cm²</span></div>'+
+    '<div class="w-stat"><span class="w-lab">高さ（aを底）</span><span class="w-val">'+tFmt(r.h.a)+'<span class="u">mm</span></span></div>'+
+    '<div class="w-stat"><span class="w-lab">高さ（bを底）</span><span class="w-val">'+tFmt(r.h.b)+'<span class="u">mm</span></span></div>'+
+    '<div class="w-stat"><span class="w-lab">高さ（cを底）</span><span class="w-val">'+tFmt(r.h.c)+'<span class="u">mm</span></span></div>'+
+    '</div>';
+  h+='<div class="tbl-wrap"><table class="out"><thead><tr><th>辺</th><th class="n">長さ mm</th><th>角</th><th class="n">角度 °</th></tr></thead><tbody>';
+  ['a','b','c'].forEach(function(k,j){
+    var G=['A','B','C'][j];
+    var gs=(given[k]!=null),gg=(given[G]!=null);
+    h+='<tr><td class="mono nw">'+k+'</td>'+
+      '<td class="n'+(gs?'':' hl')+'">'+tFmt(s[k])+'<span class="t-in '+(gs?'given':'calc')+'">'+(gs?'入力':'計算')+'</span></td>'+
+      '<td class="mono nw">'+G+'</td>'+
+      '<td class="n'+(gg?'':' hl')+'">'+tFmt(s[G])+'<span class="t-in '+(gg?'given':'calc')+'">'+(gg?'入力':'計算')+'</span></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  out.innerHTML=h;
+}
+T_KEYS.forEach(function(k){
+  var el=document.getElementById('t-'+k);
+  el.addEventListener('input',function(){T_IN[k]=el.value;el.classList.remove('calc');tTouch(k);renderTri();});
+  el.addEventListener('focus',function(){if(el.classList.contains('calc')){el.value='';el.classList.remove('calc');}});
+  el.addEventListener('blur',function(){renderTri();});   /* 空のまま離れたら計算結果を入れ直す */
+});
+function setTriMode(m){
+  T_RIGHT=(m!=='any');
+  var cc=document.getElementById('t-C');
+  cc.disabled=T_RIGHT;
+  if(T_RIGHT){T_IN.C='90';cc.value='90';cc.classList.remove('calc');}
+  else{T_IN.C='';cc.value='';}
+  T_ORD=T_ORD.filter(function(x){return String(T_IN[x]||'')!==''&&!(x==='C'&&T_RIGHT);});
+  tTouch(T_ORD.length?T_ORD[T_ORD.length-1]:'a');
+  Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-tri]'),function(b){
+    b.setAttribute('aria-selected',b.getAttribute('data-tri')===(T_RIGHT?'right':'any')?'true':'false');
+  });
+  try{localStorage.setItem('kantool.tri',T_RIGHT?'right':'any');}catch(e){}
+  renderTri();
+}
+Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-tri]'),function(b){
+  b.addEventListener('click',function(){setTriMode(b.getAttribute('data-tri'));});
+});
+document.getElementById('t-clear').addEventListener('click',function(){
+  T_KEYS.forEach(function(k){
+    if(k==='C'&&T_RIGHT)return;
+    T_IN[k]='';
+    var el=document.getElementById('t-'+k);
+    el.value='';el.classList.remove('calc');
+  });
+  T_ORD=[];
+  renderTri();
+});
+
+/* ================= 重量計算（寸法 → 断面積 → 重さ） ================= */
+/* 材質ごとの比重（g/cm³）。断面積 mm² × 比重 ÷ 1000 = 1mあたりの kg */
+var G_MATS=[
+  {k:'fe',n:'鉄（SS400 等）',lab:'鉄',rho:7.85},
+  {k:'sus',n:'SUS（ステンレス）',lab:'SUS',rho:7.93},
+  {k:'al',n:'アルミ',lab:'アルミ',rho:2.70}
+];
+/* H形鋼の根元の丸み r（JIS G3192）。4か所分の面積を足すと規格表の値に合う */
+var G_HR={'100×100':8,'125×125':8,'150×75':8,'150×150':8,'175×90':8,'175×175':12,'200×100':8,
+  '200×200':13,'250×125':8,'250×250':16,'300×150':13,'300×300':18,'350×175':13,'400×200':13};
+/* f: 入力欄 [キー, 名前]。map: 規格サイズ「50×50×2.3」の何番目の数字をどの欄に入れるか */
+var G_SHAPES=[
+  {k:'plate',n:'鉄板・プレート',lab:'PL',f:[['t','板厚'],['w','幅']],map:['t','w'],unit:'枚',
+   area:function(d){return d.t*d.w;},form:'板厚 × 幅'},
+  {k:'kaku',f:[['a','辺'],['t','肉厚']],map:['a',null,'t'],
+   area:function(d){return 2*d.t*(2*d.a-3.287*d.t);},form:'2 × 肉厚 ×（辺×2 − 3.287 × 肉厚）　※JISの角の丸みを含む式'},
+  {k:'kakuR',f:[['a','長辺'],['b','短辺'],['t','肉厚']],map:['a','b','t'],
+   area:function(d){return 2*d.t*(d.a+d.b-3.287*d.t);},form:'2 × 肉厚 ×（長辺 + 短辺 − 3.287 × 肉厚）　※JISの角の丸みを含む式'},
+  {k:'pipe',f:[['d','外径'],['t','肉厚']],map:['d','t'],
+   area:function(d){return Math.PI*d.t*(d.d-d.t);},form:'π × 肉厚 ×（外径 − 肉厚）'},
+  {k:'angle',f:[['a','辺'],['t','厚さ']],map:['a',null,'t'],
+   area:function(d){return d.t*(2*d.a-d.t);},form:'厚さ ×（辺×2 − 厚さ）'},
+  {k:'angleU',f:[['a','長辺'],['b','短辺'],['t','厚さ']],map:['a','b','t'],
+   area:function(d){return d.t*(d.a+d.b-d.t);},form:'厚さ ×（長辺 + 短辺 − 厚さ）'},
+  {k:'ch',f:[['h','高さH'],['b','幅B'],['t1','ウェブt1'],['t2','フランジt2']],map:['h','b','t1','t2'],
+   area:function(d){return d.h*d.t1+2*d.t2*(d.b-d.t1);},form:'H × t1 + 2 × t2 ×（B − t1）　※根元の丸みは省略（規格表より1〜2%軽め）'},
+  {k:'lip',f:[['h','H'],['a','A'],['c','リップC'],['t','厚さt']],map:['h','a','c','t'],
+   area:function(d){return d.t*(d.h+2*d.a+2*d.c)-6.57*d.t*d.t;},form:'t ×（H + 2A + 2C）− 6.57 × t²　※JISの角の丸みを含む式'},
+  {k:'h',f:[['h','高さH'],['b','幅B'],['t1','ウェブt1'],['t2','フランジt2']],map:['h','b','t1','t2'],
+   area:function(d){var r=G_HR[d.h+'×'+d.b]||0;return d.h*d.t1+2*d.t2*(d.b-d.t1)+4*(1-Math.PI/4)*r*r;},
+   form:'H × t1 + 2 × t2 ×（B − t1）+ 根元の丸み4か所　※一覧にないサイズは丸みを省略'},
+  {k:'fb',f:[['w','幅'],['t','厚さ']],map:['w','t'],
+   area:function(d){return d.w*d.t;},form:'幅 × 厚さ'},
+  {k:'round',f:[['d','直径']],map:['d'],
+   area:function(d){return Math.PI*d.d*d.d/4;},form:'π × 直径² ÷ 4'},
+  {k:'sq',f:[['a','辺']],map:['a'],
+   area:function(d){return d.a*d.a;},form:'辺 × 辺'},
+  {k:'other',n:'その他（1mあたりの重さを入力）',lab:'',f:[['kgm','kg/m']],map:[],form:'入力した 1mあたりの重さ × 長さ'}
+];
+/* 名前・規格サイズは材料切断の形状マスタから借りる */
+G_SHAPES.forEach(function(g){
+  var sh=shapeOf(g.k);
+  if(sh){ if(!g.n)g.n=sh.n; if(g.lab==null)g.lab=(sh.lab?sh.lab+' ':'')+sh.pre; g.sizes=sh.sizes; }
+  if(!g.sizes)g.sizes=[];
+  if(!g.unit)g.unit='本';
+});
+function gShape(k){return G_SHAPES.filter(function(g){return g.k===k;})[0]||G_SHAPES[0];}
+function gMat(k){return G_MATS.filter(function(m){return m.k===k;})[0]||G_MATS[0];}
+function gBlank(shape,mat){return {shape:shape||'plate',mat:mat||'fe',name:'',d:{},len:'',qty:''};}
+
+var G={rows:[gBlank()]};
+try{var gr=JSON.parse(localStorage.getItem('kantool.wt')||'null');if(gr&&gr.rows&&gr.rows.length)G=gr;}catch(e){}
+function gSave(){try{localStorage.setItem('kantool.wt',JSON.stringify(G));}catch(e){}}
+
+function gN(v){var n=parseFloat(v);return isFinite(n)?n:null;}
+/* いまの入力欄の数字を、規格サイズの書き方（50×50×2.3）に戻す。一覧と照らし合わせる用 */
+function gSizeOf(r){
+  var g=gShape(r.shape);
+  if(!g.map.length)return '';
+  var parts=[];
+  for(var i=0;i<g.map.length;i++){
+    var key=g.map[i]||g.map[i-1];        /* null は「ひとつ前と同じ数字」（正方形の辺など） */
+    var v=r.d[key];
+    if(v===''||v==null)return '';
+    parts.push(String(v));
+  }
+  return parts.join('×');
+}
+function gFillSize(r,size){
+  var g=gShape(r.shape),nums=String(size).split('×');
+  r.d={};
+  g.map.forEach(function(key,i){ if(key)r.d[key]=nums[i]; });
+}
+function gKg(n){
+  if(n==null||!isFinite(n))return '—';
+  return n>=100?n.toLocaleString('ja-JP',{minimumFractionDigits:1,maximumFractionDigits:1})
+               :n.toFixed(2);
+}
+/* 部材の呼び方（表・印刷用） */
+function gLabel(r){
+  var g=gShape(r.shape),d=r.d;
+  if(g.k==='other')return 'その他 '+(gN(d.kgm)!=null?gN(d.kgm)+'kg/m':'');
+  if(g.k==='plate')return 'PL-'+(d.t||'?')+'×'+(d.w||'?');
+  var sz=gSizeOf(r);
+  if(!sz)sz=g.f.map(function(f){return d[f[0]]||'?';}).join('×');
+  return g.lab+sz;
+}
+/* 1行ぶんの計算。未入力があれば wait、おかしな数字なら err */
+function gCalc(r){
+  var g=gShape(r.shape),m=gMat(r.mat),d={},i;
+  for(i=0;i<g.f.length;i++){
+    var v=gN(r.d[g.f[i][0]]);
+    if(v==null)return {wait:g.f[i][1]+'を入れてください'};
+    if(v<=0)return {err:g.f[i][1]+'は0より大きい数字を入れてください'};
+    d[g.f[i][0]]=v;
+  }
+  var L=gN(r.len);
+  if(L==null)return {wait:'長さを入れてください'};
+  if(L<=0)return {err:'長さは0より大きい数字を入れてください'};
+  var q=(String(r.qty).trim()==='')?1:gN(r.qty);
+  if(q==null||q<=0||Math.floor(q)!==q)return {err:'数量は1以上の整数を入れてください'};
+  if((g.k==='pipe')&&2*d.t>=d.d)return {err:'肉厚が外径に対して大きすぎます'};
+  if((g.k==='kaku')&&2*d.t>=d.a)return {err:'肉厚が辺に対して大きすぎます'};
+  if((g.k==='kakuR')&&2*d.t>=Math.min(d.a,d.b))return {err:'肉厚が辺に対して大きすぎます'};
+  if((g.k==='angle')&&d.t>=d.a)return {err:'厚さが辺より大きくなっています'};
+  if((g.k==='angleU')&&d.t>=Math.min(d.a,d.b))return {err:'厚さが辺より大きくなっています'};
+  if((g.k==='ch'||g.k==='h')&&(d.t1>=d.b||2*d.t2>=d.h))return {err:'板厚が高さ・幅に対して大きすぎます'};
+  if((g.k==='lip')&&(2*d.t>=Math.min(d.h,d.a)||d.t>=d.c))return {err:'厚さが寸法に対して大きすぎます'};
+  var kgm,area=null;
+  if(g.k==='other'){kgm=d.kgm;}
+  else{
+    area=g.area(d);
+    if(!(area>0))return {err:'この寸法では断面ができません。数字を見直してください'};
+    kgm=area*m.rho/1000;                 /* mm² × g/cm³ ÷ 1000 = kg/m */
+  }
+  var per=kgm*L/1000;
+  return {area:area,kgm:kgm,per:per,qty:q,total:per*q,L:L,rho:m.rho};
+}
+
+/* ---- 入力欄 ---- */
+function gRowHTML(r,i){
+  var g=gShape(r.shape);
+  var sizeSel='';
+  if(g.sizes.length){
+    var cur=gSizeOf(r),inList=g.sizes.indexOf(cur)>=0;
+    sizeSel=selHTML(g.sizes,inList?cur:'','data-gi="'+i+'" data-gf="size"',
+      cur&&!inList?'（直接入力）':'— 一覧から選ぶ —');
+  }else{
+    sizeSel='<select disabled><option>'+(g.k==='plate'?'寸法を直接入力':'—')+'</option></select>';
+  }
+  var dims=g.f.map(function(f){
+    return '<div class="g-f"><span class="lbl">'+esc(f[1])+'</span><div class="w-wrap sm">'+
+      '<input type="number" inputmode="decimal" step="any" min="0" data-gi="'+i+'" data-gd="'+f[0]+'" value="'+esc(r.d[f[0]]==null?'':r.d[f[0]])+'">'+
+      '<span class="w-unit">'+(f[0]==='kgm'?'kg/m':'mm')+'</span></div></div>';
+  }).join('');
+  dims+='<div class="g-f g-len"><span class="lbl">長さ</span><div class="w-wrap sm">'+
+    '<input type="number" inputmode="decimal" step="any" min="0" placeholder="'+(g.k==='plate'?'300':'5500')+'" data-gi="'+i+'" data-gf="len" value="'+esc(r.len)+'">'+
+    '<span class="w-unit">mm</span></div></div>'+
+    '<div class="g-f"><span class="lbl">数量</span><div class="w-wrap sm">'+
+    '<input type="number" inputmode="numeric" step="1" min="1" placeholder="1" data-gi="'+i+'" data-gf="qty" value="'+esc(r.qty)+'">'+
+    '<span class="w-unit">'+g.unit+'</span></div></div>';
+  return '<div class="card g-item" data-grow="'+i+'">'+
+    '<div class="g-head"><span class="g-no">'+(i+1)+'</span>'+
+    '<input type="text" placeholder="部品名（任意）例：ベースプレート" data-gi="'+i+'" data-gf="name" value="'+esc(r.name)+'">'+
+    (G.rows.length>1?'<button class="rowdel" data-gdel="'+i+'" title="この行を削除">×</button>':'')+'</div>'+
+    '<div class="g-spec">'+
+      '<div class="g-f"><span class="lbl">形状</span>'+selHTML(G_SHAPES.map(function(s){return [s.k,s.n];}),r.shape,'data-gi="'+i+'" data-gf="shape"',null)+'</div>'+
+      '<div class="g-f"><span class="lbl">規格サイズ</span>'+sizeSel+'</div>'+
+      '<div class="g-f"><span class="lbl">材質</span>'+
+        (g.k==='other'?'<select disabled><option>重さを直接入力</option></select>':
+         selHTML(G_MATS.map(function(m){return [m.k,m.n];}),r.mat,'data-gi="'+i+'" data-gf="mat"',null))+'</div>'+
+    '</div>'+
+    '<div class="g-dims">'+dims+'</div>'+
+    '<div class="g-res" data-gres="'+i+'">'+gResHTML(r)+'</div>'+
+  '</div>';
+}
+function gResHTML(r){
+  var c=gCalc(r),g=gShape(r.shape);
+  if(c.err)return '<span class="g-err">✕ '+esc(c.err)+'</span>';
+  if(c.wait)return '<span class="g-wait">→ '+esc(c.wait)+'</span>';
+  return (g.k==='plate'?'<span>1m²あたり<b>'+gKg(r.d.t*c.rho)+'</b>kg</span>'
+                       :'<span>1mあたり<b>'+gKg(c.kgm)+'</b>kg</span>')+
+    '<span>1'+g.unit+'<b>'+gKg(c.per)+'</b>kg</span>'+
+    '<span class="g-tot">'+c.qty+g.unit+'で<b>'+gKg(c.total)+'</b>kg</span>';
+}
+function gRenderRows(){
+  document.getElementById('g-rows').innerHTML=G.rows.map(gRowHTML).join('');
+  gRender();
+}
+/* 入力中は入力欄を作り直さず、結果の文字と規格サイズの表示だけ直す（カーソルが飛ばないように） */
+function gLive(i){
+  var r=G.rows[i];
+  var res=document.querySelector('[data-gres="'+i+'"]');
+  if(res)res.innerHTML=gResHTML(r);
+  var sel=document.querySelector('select[data-gi="'+i+'"][data-gf="size"]');
+  if(sel){
+    var g=gShape(r.shape),cur=gSizeOf(r),inList=g.sizes.indexOf(cur)>=0;
+    sel.options[0].textContent=cur&&!inList?'（直接入力）':'— 一覧から選ぶ —';
+    sel.value=inList?cur:'';
+    sel.classList.toggle('unset',!inList);
+  }
+  var no=document.querySelector('[data-grow="'+i+'"] .g-no');
+  if(no){var c=gCalc(r);no.classList.toggle('off',!!(c.err||c.wait));}
+  gRender();
+}
+
+/* ---- 結果 ---- */
+function gRender(){
+  var out=document.getElementById('g-out');
+  var list=G.rows.map(function(r,i){return {r:r,i:i,c:gCalc(r)};}).filter(function(x){return !x.c.err&&!x.c.wait;});
+  Array.prototype.forEach.call(document.querySelectorAll('#g-rows .g-no'),function(el,i){
+    var c=G.rows[i]?gCalc(G.rows[i]):null;
+    el.classList.toggle('off',!c||!!(c.err||c.wait));
+  });
+  if(!list.length){out.innerHTML=wMsg('prompt','→','形状・寸法・長さを入れると、ここに合計の重さが出ます');gSave();return;}
+  var total=0,byMat={},cnt={};
+  list.forEach(function(x){
+    total+=x.c.total;
+    var g=gShape(x.r.shape);
+    var ml=g.k==='other'?'その他':gMat(x.r.mat).lab;
+    byMat[ml]=(byMat[ml]||0)+x.c.total;
+    cnt[g.unit]=(cnt[g.unit]||0)+x.c.qty;
+  });
+  var skipped=G.rows.length-list.length;
+  var h='<div class="w-stats">'+
+    '<div class="w-stat hero"><span class="w-lab">合計重量</span><span class="w-val">'+gKg(total)+'<span class="u">kg</span></span>'+
+      '<span class="w-sub">'+(total>=1000?'約 '+(total/1000).toFixed(2)+' t':list.length+'行の合計')+'</span></div>'+
+    '<div class="w-stat"><span class="w-lab">数量</span><span class="w-val">'+
+      Object.keys(cnt).map(function(u){return cnt[u]+'<span class="u">'+u+'</span>';}).join(' ')+'</span>'+
+      '<span class="w-sub">'+list.length+'種類</span></div>'+
+    '<div class="w-stat"><span class="w-lab">材質別</span><span class="w-sub" style="font-size:12.5px;line-height:1.7;color:var(--ink2)">'+
+      Object.keys(byMat).map(function(k){return esc(k)+' '+gKg(byMat[k])+' kg';}).join('<br>')+'</span></div>'+
+  '</div>';
+  if(skipped)h+=wMsg('prompt','！','入力が終わっていない行・エラーの行が'+skipped+'行あります。合計には入っていません。');
+  h+='<div class="tbl-wrap"><table class="out"><thead><tr>'+
+    '<th class="idx">#</th><th>部材</th><th>材質</th><th class="n">長さ</th><th class="n">数量</th>'+
+    '<th class="n">kg/m</th><th class="n">1つ kg</th><th class="n">計 kg</th></tr></thead><tbody>';
+  list.forEach(function(x){
+    var g=gShape(x.r.shape);
+    h+='<tr><td class="idx">'+(x.i+1)+'</td>'+
+      '<td class="nw"><span class="mono">'+esc(gLabel(x.r))+'</span>'+(x.r.name?' <span class="sub">'+esc(x.r.name)+'</span>':'')+'</td>'+
+      '<td class="nw">'+(g.k==='other'?'—':esc(gMat(x.r.mat).lab))+'</td>'+
+      '<td class="n">'+fmt(x.c.L)+'</td>'+
+      '<td class="n">'+x.c.qty+'<span class="sub"> '+g.unit+'</span></td>'+
+      '<td class="n">'+gKg(x.c.kgm)+'</td>'+
+      '<td class="n">'+gKg(x.c.per)+'</td>'+
+      '<td class="n hl">'+gKg(x.c.total)+'</td></tr>';
+  });
+  h+='</tbody><tfoot><tr><td></td><td colspan="6">合計</td><td class="n hl">'+gKg(total)+'</td></tr></tfoot></table></div>';
+  var used={};
+  list.forEach(function(x){used[x.r.shape]=1;});
+  h+=wDetails('<div class="w-steps">'+
+    '1本（1枚）の重さ <span class="eq">=</span> 断面積 mm² × 比重 × 長さ mm ÷ 1,000,000<br>'+
+    G_SHAPES.filter(function(g){return used[g.k];}).map(function(g){
+      return esc(g.n)+'：断面積 <span class="eq">=</span> '+esc(g.form);
+    }).join('<br>')+'<br>'+
+    '比重：'+G_MATS.map(function(m){return m.lab+' '+m.rho.toFixed(2);}).join(' ／ ')+
+    '</div><p class="hint" style="margin:0">※ 角の丸みなどを近似しているため、メーカーの規格表と数%違うことがあります。塗装・めっき・溶接の重さは含みません。</p>')
+    .replace('配置図・計算式を表示','計算式を表示');
+  out.innerHTML=h;
+  gSave();
+}
+function gHead(){
+  return '<div class="sh-head"><div class="sh-title">重量計算</div><div class="sh-meta">'+
+    '<span>比重<b>鉄7.85 / SUS7.93 / アルミ2.70</b></span></div></div>';
+}
+function buildWtDoc(){
+  var out=document.getElementById('g-out').innerHTML.replace(/<details class="w-more"/g,'<details class="w-more" open');
+  var css=document.getElementById('appStyle').textContent;
+  var extra='body{background:#fff!important;color:#111!important;padding:0}'+
+    '.wprint{max-width:188mm;margin:0 auto;padding:8mm}'+
+    '.w-more summary{display:none!important}'+
+    '.w-stats,.tbl-wrap{break-inside:avoid}'+
+    '@media print{.wprint{max-width:none;padding:0}}';
+  return '<!doctype html><html lang="ja" data-theme="light"><head><meta charset="utf-8">'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>重量計算</title>'+
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Roboto+Mono:wght@400;500;700&display=swap">'+
+    '<style id="pageStyle">@page{size:A4 portrait;margin:11mm}</style>'+
+    '<style>'+css+'\n'+extra+'</style></head><body><div class="wprint">'+
+    gHead()+out+'</div>'+
+    '<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){window.print();},450);});</scr'+'ipt>'+
+    '</body></html>';
+}
+
+document.getElementById('g-rows').addEventListener('input',function(e){
+  var el=e.target,i=el.getAttribute('data-gi');
+  if(i==null||el.tagName==='SELECT')return;
+  var r=G.rows[+i];if(!r)return;
+  var dk=el.getAttribute('data-gd');
+  if(dk)r.d[dk]=el.value; else r[el.getAttribute('data-gf')]=el.value;
+  gLive(+i);
+});
+document.getElementById('g-rows').addEventListener('change',function(e){
+  var el=e.target,i=el.getAttribute('data-gi');
+  if(i==null||el.tagName!=='SELECT')return;
+  var r=G.rows[+i],f=el.getAttribute('data-gf');
+  if(!r)return;
+  if(f==='shape'){r.shape=el.value;r.d={};}
+  else if(f==='size'){ if(el.value)gFillSize(r,el.value); }
+  else if(f==='mat'){r.mat=el.value;}
+  gRenderRows();
+});
+document.getElementById('g-rows').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('[data-gdel]'):null;
+  if(!b)return;
+  G.rows.splice(+b.getAttribute('data-gdel'),1);
+  if(!G.rows.length)G.rows.push(gBlank());
+  gRenderRows();
+});
+document.getElementById('g-add').addEventListener('click',function(){
+  var last=G.rows[G.rows.length-1];
+  G.rows.push(gBlank(last&&last.shape,last&&last.mat));   /* 同じ形状・材質を続けて入れることが多い */
+  gRenderRows();
+  var box=document.querySelectorAll('#g-rows .g-item');
+  var tgt=box[box.length-1];
+  if(tgt){var s=tgt.querySelector('select[data-gf="size"]:not([disabled])')||tgt.querySelector('input[data-gd]');if(s)s.focus();}
+});
+document.getElementById('g-clear').addEventListener('click',function(){
+  G={rows:[gBlank()]};gRenderRows();toast('重量計算の入力をすべてクリアしました。');
+});
+gRenderRows();
+
+/* ================= タブ ================= */
+var TABS={weld:'scr-weld',circle:'scr-circle',tri:'scr-tri',cut:'scr-cut',wt:'scr-wt'};
+var curTab='weld';
+function setTab(t){
+  if(t==='pitch'||t==='stagger')t='weld';        /* 旧バージョンの保存値を移行 */
+  if(!TABS[t])t='weld';
+  curTab=t;
+  Object.keys(TABS).forEach(function(k){document.getElementById(TABS[k]).hidden=(k!==t);});
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(b){
+    b.setAttribute('aria-selected',b.getAttribute('data-tab')===t?'true':'false');
+  });
+  document.body.className='tab-'+t;
+  try{localStorage.setItem('kantool.tab',t);}catch(e){}
+}
+Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(b){
+  b.addEventListener('click',function(){setTab(b.getAttribute('data-tab'));});
+});
+
+/* 溶接ピッチ内の 通常／千鳥 切替 */
+function setWeldMode(m){
+  if(m!=='stagger')m='normal';
+  document.getElementById('w-normal').hidden=(m!=='normal');
+  document.getElementById('w-stagger').hidden=(m!=='stagger');
+  Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-weld]'),function(b){
+    b.setAttribute('aria-selected',b.getAttribute('data-weld')===m?'true':'false');
+  });
+  try{localStorage.setItem('kantool.weld',m);}catch(e){}
+}
+Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-weld]'),function(b){
+  b.addEventListener('click',function(){setWeldMode(b.getAttribute('data-weld'));});
+});
+
+/* 初期表示 */
+document.getElementById('p-len').value='3000';
+document.getElementById('p-weld').value='30';
+document.getElementById('p-pitch').value='150';
+document.getElementById('s-len').value='3000';
+document.getElementById('s-weld').value='30';
+document.getElementById('s-pitch').value='150';
+document.getElementById('c-size').value='1782';
+renderPitch();renderStagger();
+var savedTab='weld',savedWeld='normal',savedCdim='dia';
+try{
+  savedTab=localStorage.getItem('kantool.tab')||'weld';
+  savedWeld=localStorage.getItem('kantool.weld')||'normal';
+  savedCdim=localStorage.getItem('kantool.cdim')||'dia';
+}catch(e){}
+if(savedCdim==='rad'){
+  var cb=document.querySelector('.segbtn[data-cdim="rad"]');
+  if(cb)cb.click();
+}
+var savedShape='half',savedMode='gap',savedDir='cw';
+try{
+  savedShape=localStorage.getItem('kantool.cshape')||'half';
+  savedMode=localStorage.getItem('kantool.cmode')||'gap';
+  savedDir=localStorage.getItem('kantool.cdir')||'cw';
+}catch(e){}
+if(savedDir==='ccw'){
+  var db=document.querySelector('.segbtn[data-cdir="ccw"]');
+  if(db)db.click();
+}
+if(savedShape==='full'){
+  var sb=document.querySelector('.segbtn[data-cshape="full"]');
+  if(sb)sb.click();
+}
+if(savedMode==='abs'){
+  var mb=document.querySelector('.segbtn[data-cmode="abs"]');
+  if(mb)mb.click();
+}
+cRebuild();
+applyTheme();
+setWeldMode(savedWeld);
+var savedTri='right';
+try{savedTri=localStorage.getItem('kantool.tri')||'right';}catch(e){}
+setTriMode(savedTri);
+setTab(savedTab);
+applyDec();
+initDownloads();
+/* ================= 要望ボックス（メールで送る） ================= */
+/* 受け取り用アドレス */
+var FEEDBACK_TO='s071308+seikan@gmail.com';
+var APP_VER='2026-10-10';
+var FB_KINDS=['不具合','追加してほしい機能','使い方の質問','その他'];
+var FB_TABS={weld:'溶接ピッチ',circle:'円周割付',tri:'三角計算',cut:'材料切断',wt:'重量計算',all:'ツール全体'};
+var FB={kind:'',tab:'',body:'',name:''};
+try{var fbr=JSON.parse(localStorage.getItem('kantool.fb')||'null');if(fbr)FB=fbr;}catch(e){}
+function fbSave(){try{localStorage.setItem('kantool.fb',JSON.stringify(FB));}catch(e){}}
+
+function fbText(){
+  return '【種類】'+(FB.kind||'未選択')+'\n'+
+    '【どの機能】'+(FB_TABS[FB.tab]||'未選択')+'\n'+
+    '【名前】'+(FB.name.trim()||'（なし）')+'\n\n'+
+    FB.body.trim()+'\n\n'+
+    '----\n製缶溶接ツール 版 '+APP_VER+' ／ '+new Date().toLocaleString('ja-JP');
+}
+function fbSubject(){
+  return '[製缶溶接ツール] '+(FB.kind||'要望')+'：'+(FB_TABS[FB.tab]||'');
+}
+function fbCheck(d){
+  var err=d.querySelector('#fbErr');
+  if(!FB.kind){err.textContent='「種類」を選んでください。';return false;}
+  if(!FB.body.trim()){err.textContent='「内容」を書いてください。';d.querySelector('#fbBody').focus();return false;}
+  err.textContent='';return true;
+}
+function openFeedback(){
+  if(!FB.tab)FB.tab=curTab;
+  var kinds=FB_KINDS.map(function(k){
+    return '<button type="button" class="btn" data-fbkind="'+esc(k)+'" aria-pressed="'+(FB.kind===k?'true':'false')+'">'+esc(k)+'</button>';
+  }).join('');
+  var tabs=Object.keys(FB_TABS).map(function(k){return [k,FB_TABS[k]];});
+  var d=showModal('要望・不具合を送る',
+    '<div class="fb-form">'+
+      (navigator.onLine===false?'<p class="fb-off">いまは電波がありません。メールは作れますが、送信は電波のあるところで行ってください（メールアプリの「送信トレイ」や「下書き」に残ります）。</p>':'')+
+      '<div class="fb-f"><span class="lbl">種類</span><div class="fb-kinds" role="group" aria-label="種類">'+kinds+'</div></div>'+
+      '<div class="fb-f"><label for="fbTab">どの機能のこと？</label>'+selHTML(tabs,FB.tab,'id="fbTab"',null)+'</div>'+
+      '<div class="fb-f"><label for="fbBody">内容</label>'+
+        '<textarea id="fbBody" class="fb-body" placeholder="例：円周割付で、穴を20個以上入れると表がはみ出す&#10;例：板の曲げ展開長を計算できるようにしてほしい">'+esc(FB.body)+'</textarea>'+
+        '<span class="fb-note">不具合のときは「何を入れたら、どうなったか」を書いてもらえると直しやすいです。</span></div>'+
+      '<div class="fb-f"><label for="fbName">名前<span class="opt">（任意）</span></label>'+
+        '<input type="text" id="fbName" placeholder="例：第2工場 佐藤" value="'+esc(FB.name)+'"></div>'+
+      '<p class="fb-err" id="fbErr" aria-live="polite"></p>'+
+      '<p class="fb-note">「メールを作る」を押すと、宛先（<span class="fb-to">'+esc(FEEDBACK_TO)+'</span>）と内容が入った状態でメールアプリが開きます。送信ボタンを押したら完了です。'+
+      'メールアプリが開かないときは「内容をコピー」して、ふだんのメールに貼り付けて送ってください。</p>'+
+    '</div>',
+    '<button class="btn" id="fbCopy">内容をコピー</button>'+
+    '<button class="btn primary" id="fbMail">メールを作る</button>');
+  d.querySelector('.modal-box').addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('[data-fbkind]'):null;
+    if(!b)return;
+    FB.kind=b.getAttribute('data-fbkind');fbSave();
+    Array.prototype.forEach.call(d.querySelectorAll('[data-fbkind]'),function(x){
+      x.setAttribute('aria-pressed',x===b?'true':'false');
+    });
+    d.querySelector('#fbErr').textContent='';
+  });
+  d.querySelector('#fbTab').addEventListener('change',function(e){FB.tab=e.target.value;fbSave();});
+  d.querySelector('#fbBody').addEventListener('input',function(e){
+    FB.body=e.target.value;fbSave();
+    if(FB.body.trim())d.querySelector('#fbErr').textContent='';
+  });
+  d.querySelector('#fbName').addEventListener('input',function(e){FB.name=e.target.value;fbSave();});
+  d.querySelector('#fbMail').addEventListener('click',function(){
+    if(!fbCheck(d))return;
+    location.href='mailto:'+FEEDBACK_TO+'?subject='+encodeURIComponent(fbSubject())+'&body='+encodeURIComponent(fbText());
+    /* 送ったかどうかはページから分からないので、下書きは「消す」を押したときだけ消す */
+    var foot=d.querySelector('.modal-foot');
+    foot.innerHTML='<span class="fb-note" style="margin-right:auto">メールを送ったら、入力した内容を消しておけます。</span>'+
+      '<button class="btn" id="fbDone">送ったので消す</button><button class="btn" data-mclose="1">閉じる</button>';
+    foot.querySelector('#fbDone').addEventListener('click',function(){
+      FB={kind:'',tab:'',body:'',name:FB.name};fbSave();closeModal();
+      toast('ありがとうございました！要望はかならず目を通します。');
+    });
+  });
+  d.querySelector('#fbCopy').addEventListener('click',function(){
+    if(!fbCheck(d))return;
+    copyText('宛先：'+FEEDBACK_TO+'\n件名：'+fbSubject()+'\n\n'+fbText(),
+      'コピーしました。宛先 '+FEEDBACK_TO+' へのメールに貼り付けて送ってください。');
+  });
+}
+document.getElementById('btnFeedback').onclick=openFeedback;
+document.getElementById('leadFeedback').onclick=openFeedback;
+
+/* ================= オフライン対応 ================= */
+/* 一度開けば、次からは電波がなくても使える。新しい版があれば次に開いたときに切り替わる */
+function netBadge(){
+  var b=document.getElementById('netBadge');
+  if(b)b.hidden=(navigator.onLine!==false);
+}
+window.addEventListener('online',netBadge);
+window.addEventListener('offline',netBadge);
+netBadge();
+if('serviceWorker' in navigator&&location.protocol!=='file:'){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
