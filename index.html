@@ -570,6 +570,10 @@ table.out tfoot td{border-top:2px solid var(--lineS);border-bottom:none;font-wei
 .fb-off{background:var(--amberSoft);border:1px solid var(--amber);color:var(--ink);
   border-radius:var(--r);padding:8px 11px;font-size:12.5px;line-height:1.7}
 .fb-to{font-family:var(--f-mono);color:var(--ink2)}
+.oh-h{font-size:13.5px;margin:6px 0 0;color:var(--ink)}
+.oh-ol{margin:0;padding-left:1.4em;color:var(--ink2);line-height:1.85}
+.oh-ol b{color:var(--ink)}
+.modal-body p.oh-note{font-size:12px;color:var(--ink3)}
 .net-badge{font-size:11.5px;font-weight:700;color:var(--amber);background:var(--amberSoft);
   border:1px solid var(--amber);border-radius:999px;padding:2px 10px;white-space:nowrap}
 @media print{.net-badge{display:none !important}}
@@ -585,6 +589,7 @@ table.out tfoot td{border-top:2px solid var(--lineS);border-bottom:none;font-wei
     <div class="actions">
       <span class="net-badge" id="netBadge" hidden>オフライン中（計算はそのまま使えます）</span>
       <button class="btn" id="btnFeedback">要望・不具合を送る</button>
+      <button class="btn" id="btnOffline">オフラインでの使い方</button>
       <button class="btn" id="btnPrintFile" hidden>印刷用ファイルを保存</button>
       <button class="btn" id="btnTheme">画面を暗く</button>
       <button class="btn" id="btnImage">画像で出す</button>
@@ -3002,7 +3007,7 @@ initDownloads();
 /* ================= 要望ボックス（メールで送る） ================= */
 /* 受け取り用アドレス */
 var FEEDBACK_TO='s071308+seikan@gmail.com';
-var APP_VER='2026-10-10';
+var APP_VER='2026-10-10b';
 var FB_KINDS=['不具合','追加してほしい機能','使い方の質問','その他'];
 var FB_TABS={weld:'溶接ピッチ',circle:'円周割付',tri:'三角計算',cut:'材料切断',wt:'重量計算',all:'ツール全体'};
 var FB={kind:'',tab:'',body:'',name:''};
@@ -3082,6 +3087,43 @@ function openFeedback(){
 }
 document.getElementById('btnFeedback').onclick=openFeedback;
 document.getElementById('leadFeedback').onclick=openFeedback;
+
+/* ================= オフラインでの使い方（説明） ================= */
+function openOfflineHelp(){
+  var ua=navigator.userAgent||'';
+  var os=/iPhone|iPad|iPod/.test(ua)?'ios':/Android/.test(ua)?'android':'pc';
+  var sec={
+    android:'<h4 class="oh-h">Android（Chrome）</h4><ol class="oh-ol">'+
+      '<li>このページを Chrome で開く</li>'+
+      '<li>右上の <b>︙（メニュー）</b> →「<b>ホーム画面に追加</b>」を押す</li>'+
+      '<li>「<b>ショートカットを作成</b>」を選び、「<b>追加</b>」を押す</li>'+
+      '<li>ホーム画面に青い「製」のアイコンが出たら完了</li></ol>'+
+      '<p class="oh-note">「アプリをインストール」が出ることもありますが、うまく入らないときは「ショートカットを作成」で大丈夫です。使い勝手はほとんど同じです。</p>',
+    ios:'<h4 class="oh-h">iPhone・iPad（Safari）</h4><ol class="oh-ol">'+
+      '<li>このページを <b>Safari</b> で開く</li>'+
+      '<li>画面下（iPadは上）の <b>共有ボタン</b>（四角から矢印が出ているマーク）を押す</li>'+
+      '<li>「<b>ホーム画面に追加</b>」を押し、右上の「<b>追加</b>」を押す</li>'+
+      '<li>ホーム画面に青い「製」のアイコンが出たら完了</li></ol>',
+    pc:'<h4 class="oh-h">パソコン（Chrome・Edge）</h4><ol class="oh-ol">'+
+      '<li>このページを Chrome か Edge で開く</li>'+
+      '<li>アドレスバーの右にある <b>インストールのマーク</b>、またはメニューの「<b>アプリをインストール</b>」を押す</li>'+
+      '<li>うまくいかないときは、<b>ブックマーク</b>しておくだけでもOK（一度開いていれば、電波がなくても開けます）</li></ol>'
+  };
+  var order=[os].concat(['android','ios','pc'].filter(function(k){return k!==os;}));
+  showModal('オフラインでの使い方',
+    '<p><b>一度でもこのページを開いておけば、次からは電波がなくても全部の計算が使えます。</b>'+
+    'ホーム画面にアイコンを置いておくと、すぐ開けて便利です。</p>'+
+    sec[order[0]]+
+    '<details class="w-more"><summary><span class="chev">▸</span>ほかの端末の場合</summary><div class="w-mbody">'+
+      sec[order[1]]+sec[order[2]]+'</div></details>'+
+    '<h4 class="oh-h">知っておくと安心なこと</h4><ul class="oh-ol">'+
+      '<li>最初の1回だけは、<b>電波のあるところ</b>で開いてください</li>'+
+      '<li>電波がないときは、画面の上に「<b>オフライン中</b>」と出ます。計算はそのまま使えます</li>'+
+      '<li>ツールが新しくなったときは、電波のあるところで開くと自動で新しい版に切り替わります</li>'+
+      '<li>長いあいだ開かないと、端末が保存分を消すことがあります。<b>ときどき電波のあるところで開いておく</b>と確実です</li>'+
+      '<li>「要望・不具合を送る」のメールは、電波のあるところで送信してください</li></ul>','');
+}
+document.getElementById('btnOffline').onclick=openOfflineHelp;
 
 /* ================= オフライン対応 ================= */
 /* 一度開けば、次からは電波がなくても使える。新しい版があれば次に開いたときに切り替わる */
