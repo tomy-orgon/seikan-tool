@@ -273,6 +273,10 @@ table.out td.idx{color:var(--ink3);font-family:var(--f-mono);width:1%}
 .modal-head h3{font-size:15px;flex:1;min-width:0}
 .modal-body{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:10px;font-size:13px}
 .modal-body p{margin:0;color:var(--ink2);line-height:1.7}
+.wt-pick{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);cursor:pointer;line-height:1.6}
+.wt-pick:has(input:checked){border-color:var(--accent)}
+.wt-pick input{margin-top:5px}
+.wt-pick .sub{font-size:12px;color:var(--ink3)}
 .modal-body textarea{width:100%;min-height:180px;font-family:var(--f-mono);font-size:12px;
   border:1px solid var(--line);border-radius:var(--r);background:var(--surface2);
   color:var(--ink);padding:9px;resize:vertical}
@@ -498,6 +502,10 @@ body.tab-weld .wrap,body.tab-circle .wrap,body.tab-tri .wrap,body.tab-wt .wrap{m
 .c-pad .ghost{font-family:var(--f-sans);font-size:13px;fill:var(--ink3)}
 .c-padbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
 .c-padbar .hint{margin-top:0;flex:1;min-width:150px}
+.c-eq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.c-eq .c-eqlab{font-size:13px;font-weight:600;color:var(--ink2)}
+.c-eq .w-wrap{width:110px}
+.c-eq + .hint{margin-top:4px}
 .c-pad .no,.c-svg .no{font-family:var(--f-mono);font-size:11px;font-weight:700;fill:var(--onAccent)}
 .c-row{display:grid;grid-template-columns:26px minmax(84px,112px) 1fr 24px;align-items:center;gap:7px;padding:3px 0}
 .c-no{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--onAccent);
@@ -701,6 +709,13 @@ table.out tfoot td{border-top:2px solid var(--lineS);border-bottom:none;font-wei
             <button class="btn tiny" id="c-undo">ひとつ戻す</button>
             <button class="btn tiny" id="c-clear">全部消す</button>
           </div>
+          <div class="c-eq">
+            <span class="c-eqlab">等分で入れる</span>
+            <div class="w-wrap sm"><input id="c-eqn" type="number" inputmode="numeric" min="2" max="120" step="1" placeholder="8"><span class="w-unit">個</span></div>
+            <div class="w-wrap sm" id="c-eqsw"><input id="c-eqs" type="number" inputmode="decimal" step="any" placeholder="0"><span class="w-unit">°から</span></div>
+            <button class="btn tiny primary" id="c-eqgo">等分に並べる</button>
+          </div>
+          <p class="hint" id="c-eqhint"></p>
         </div>
         <div class="w-field">
           <label id="c-rowlab">穴の間隔（穴①②③…）</label>
@@ -763,6 +778,7 @@ table.out tfoot td{border-top:2px solid var(--lineS);border-bottom:none;font-wei
     <button class="btn" id="btnClear">全部クリア</button>
     <button class="btn" id="btnExport">入力内容を保存</button>
     <button class="btn" id="btnImport">読み込み</button>
+    <button class="btn primary" id="btnToWt">重量を計算する →</button>
   </div>
   <div class="jobhead">
     <div class="f"><span class="lbl">案件名 / Job</span><input type="text" id="jobName" placeholder="例：架台フレーム 一式"></div>
@@ -1967,7 +1983,8 @@ function cHoles(){
 }
 /* 0°から測った角度の並びを、いまの入れ方に合わせて行の値に戻す */
 function cSetAbs(list){
-  var rd=function(x){return String(Math.round(x*100)/100);};
+  /* 計算の誤差だけ消して、7等分（51.428…°）のような割り切れない角度はそのまま持つ */
+  var rd=function(x){return String(Math.round(x*1e10)/1e10);};
   if(C_MODE==='abs'){C_ANGS=list.map(function(a){return rd(cNorm(a));});return;}
   C_ANGS=list.map(function(a,i){
     if(i===0)return rd(cNorm(a));
@@ -2076,7 +2093,7 @@ function cUpdateGaps(){
 }
 /* 入力欄を作り直さずに、図と結果だけ更新（入力中にカーソルが飛ばないように） */
 function cLive(){cUpdateGaps();cPadRender();renderCircle();}
-function cRebuild(){cRenderRows();cPadRender();renderCircle();}
+function cRebuild(){cRenderRows();cPadRender();renderCircle();cEqHint();}
 
 document.getElementById('c-rows').addEventListener('input',function(e){
   var el=e.target;
@@ -2234,6 +2251,30 @@ document.getElementById('c-undo').addEventListener('click',function(){
 document.getElementById('c-clear').addEventListener('click',function(){
   cUndoPush();C_ANGS=[];cRebuild();
 });
+
+/* ---- 等分で入れる ---- */
+/* 全円は 360° を n 等分（開始角度から）。半円は両端（270° と 90°）を含めて 180° を n−1 等分 */
+function cEqHint(){
+  var n=parseInt(document.getElementById('c-eqn').value,10);
+  document.getElementById('c-eqsw').hidden=C_HALF;
+  var ok=isFinite(n)&&n>=2&&n<=120;
+  document.getElementById('c-eqhint').textContent=C_HALF
+    ? (ok?'半円の両端（270°と90°）を含めて '+n+'個、'+cAng(180/(n-1))+'おきに並べます。':'半円の両端（270°と90°）を含めて、等間隔に並べます。')
+    : (ok?'全周を '+n+'等分して、'+cAng(360/n)+'おきに並べます。':'全周を等分して並べます。PCDの等配に使えます。');
+}
+document.getElementById('c-eqn').addEventListener('input',cEqHint);
+document.getElementById('c-eqgo').addEventListener('click',function(){
+  var n=parseInt(document.getElementById('c-eqn').value,10);
+  if(!isFinite(n)||n<2||n>120){toast('穴の数は 2〜120 の整数を入れてください。');document.getElementById('c-eqn').focus();return;}
+  var list=[],i,s=parseFloat(document.getElementById('c-eqs').value);
+  if(!isFinite(s))s=0;
+  for(i=0;i<n;i++)list.push(C_HALF?cNorm(270+180*i/(n-1)):cNorm(s+360*i/n));
+  list.sort(function(a,b){return cOrd(a)-cOrd(b);});
+  cUndoPush();
+  cSetAbs(list);
+  cRebuild();
+  toast(n+'個の穴を等分に並べました。「ひとつ戻す」で元に戻せます。');
+});
 Array.prototype.forEach.call(document.querySelectorAll('.segbtn[data-cshape]'),function(b){
   b.addEventListener('click',function(){
     C_HALF=(b.getAttribute('data-cshape')==='half');
@@ -2314,7 +2355,7 @@ function renderCircle(){
   if(hs.length>120){out.innerHTML=wMsg('error','✕','穴が多すぎます（'+hs.length+'個）。120個までにしてください。');return;}
 
   var i,pairs=cPairs(hs),gaps=pairs.map(function(pr){return cGap(pr[0].a,pr[1].a);});
-  var same=gaps.every(function(g){return Math.abs(g-gaps[0])<1e-9;});
+  var same=gaps.every(function(g){return Math.abs(g-gaps[0])<1e-6;});
   var zero=gaps.some(function(g){return g<1e-9;});
 
   var h='<div class="w-stats">';
@@ -2926,6 +2967,81 @@ document.getElementById('g-clear').addEventListener('click',function(){
 });
 gRenderRows();
 
+/* ---- 材料切断の品目を重量計算へ送る ---- */
+/* 材料切断の材質名（SS400・SUS304・A6063 など）を、重量計算の比重の区分に直す */
+function gMatOf(name){
+  var n=String(name||'').toUpperCase();
+  if(/^SUS/.test(n))return 'sus';
+  if(/^A\d/.test(n))return 'al';
+  return 'fe';
+}
+/* kind: 'parts'＝切断後の部材 ／ 'stock'＝使う定尺・端材 */
+function gRowsFromCut(kind){
+  var rows=[],skip=[];
+  S.items.forEach(function(it,idx){
+    if(!it.shape||!gShape(it.shape)||gShape(it.shape).k!==it.shape){skip.push(itemTitle(it,idx));return;}
+    var base=gBlank(it.shape,gMatOf(it.mat));
+    var size=String(it.size||'').replace(/[xX*＊ｘＸ]/g,'×').replace(/\s/g,'');
+    if(size)gFillSize(base,size);
+    function add(name,len,qty){
+      var r=JSON.parse(JSON.stringify(base));
+      r.name=name;r.len=String(len);r.qty=String(qty);
+      if(it.shape==='other'&&!r.name)r.name=itemTitle(it,idx);
+      rows.push(r);
+    }
+    if(kind==='parts'){
+      it.parts.forEach(function(p){
+        var L=num(p.len,0),q=num(p.qty,0);
+        if(L>0&&q>0)add(p.label||'',L,q);
+      });
+    }else{
+      var R=solveItem(it),grp={},order=[];
+      R.patterns.forEach(function(p){
+        var k=p.type+':'+p.srcLen;
+        if(!grp[k]){grp[k]={type:p.type,len:p.srcLen,qty:0};order.push(k);}
+        grp[k].qty+=p.rep;
+      });
+      order.forEach(function(k){var g=grp[k];add(g.type==='stock'?'定尺':'端材',g.len,g.qty);});
+    }
+  });
+  return {rows:rows,skip:skip};
+}
+function gHasInput(){
+  return G.rows.some(function(r){return String(r.len||'').trim()!==''||String(r.qty||'').trim()!==''||String(r.name||'').trim()!=='';});
+}
+function sendCutToWt(kind,mode){
+  var res=gRowsFromCut(kind);
+  if(!res.rows.length){
+    toast(kind==='parts'?'送れる切断寸法がありません。形状と切断寸法（長さ・本数）を入れてください。'
+                        :'使う材料がまだ決まっていません。定尺と切断寸法を入れてください。',5000);
+    return;
+  }
+  G.rows=(mode==='append'&&gHasInput())?G.rows.concat(res.rows):res.rows;
+  closeModal();
+  gRenderRows();gSave();
+  setTab('wt');
+  window.scrollTo(0,0);
+  toast(res.rows.length+'行を重量計算に送りました。'+(res.skip.length?'（形状が未選択の「'+res.skip.join('・')+'」は送っていません）':''),5000);
+}
+document.getElementById('btnToWt').onclick=function(){
+  var has=gHasInput();
+  var d=showModal('重量計算へ送る',
+    '<p>材料切断に入れた品目を、重量計算タブに送って重さを出します。どちらの重さを出しますか？</p>'+
+    '<label class="wt-pick"><input type="radio" name="wtKind" value="parts" checked>'+
+      '<span><b>切断後の部材（製品）の重さ</b><br><span class="sub">切断寸法 × 本数。製品重量や見積りに。</span></span></label>'+
+    '<label class="wt-pick"><input type="radio" name="wtKind" value="stock">'+
+      '<span><b>使う材料（定尺・端材）の重さ</b><br><span class="sub">切断図で使う定尺・端材の本数。材料の手配に。</span></span></label>'+
+    (has?'<p class="hint" style="margin:0">重量計算タブには、すでに入力があります。置き換えるか、後ろに追加するかを選んでください。</p>':''),
+    has?'<button class="btn" data-wtsend="append">後ろに追加</button><button class="btn primary" data-wtsend="replace">置き換えて送る</button>'
+       :'<button class="btn primary" data-wtsend="replace">送る</button>');
+  d.addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('[data-wtsend]'):null;
+    if(!b)return;
+    var k=d.querySelector('input[name="wtKind"]:checked');
+    sendCutToWt(k?k.value:'parts',b.getAttribute('data-wtsend'));
+  });
+};
+
 /* ================= タブ ================= */
 var TABS={weld:'scr-weld',circle:'scr-circle',tri:'scr-tri',cut:'scr-cut',wt:'scr-wt'};
 var curTab='weld';
@@ -3007,7 +3123,7 @@ initDownloads();
 /* ================= 要望ボックス（メールで送る） ================= */
 /* 受け取り用アドレス */
 var FEEDBACK_TO='s071308+seikan@gmail.com';
-var APP_VER='2026-10-10c';
+var APP_VER='2026-10-18a';
 var FB_KINDS=['不具合','追加してほしい機能','使い方の質問','その他'];
 var FB_TABS={weld:'溶接ピッチ',circle:'円周割付',tri:'三角計算',cut:'材料切断',wt:'重量計算',all:'ツール全体'};
 var FB={kind:'',tab:'',body:'',name:''};
