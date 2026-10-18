@@ -1,6 +1,6 @@
 /* 製缶溶接ツール：オフライン用。
    版を上げるときは VER を変える（古い保存分は自動で消える） */
-var VER='seikan-2026-10-10c';
+var VER='seikan-2026-10-18a';
 var CORE=['./','index.html','manifest.json','icon-192.png','icon-512.png','apple-touch-icon.png','favicon.png'];
 
 self.addEventListener('install',function(e){
